@@ -1,0 +1,2808 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>API Documentation &mdash; delfi 0.5.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Credits" href="credits.html" />
+    <link rel="prev" title="Getting started" href="notebooks/quickstart.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> delfi
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.5.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/quickstart.html">Getting started</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API Documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#inference-inference-algorithms"><code class="docutils literal notranslate"><span class="pre">inference</span></code> – Inference algorithms</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#basic">Basic</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#snpe">SNPE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cdelfi">CDELFI</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#generator-generator"><code class="docutils literal notranslate"><span class="pre">generator</span></code> – Generator</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#default">Default</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#distribution-distributions"><code class="docutils literal notranslate"><span class="pre">distribution</span></code> – Distributions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#discrete">Discrete</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gaussian">Gaussian</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#student-s-t">Student’s T</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#uniform">Uniform</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#distribution-mixture-mixtures"><code class="docutils literal notranslate"><span class="pre">distribution.mixture</span></code> – Mixtures</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#mixture-of-gaussians">Mixture of Gaussians</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mixture-of-student-s-t">Mixture of Student’s T</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#simulator-simulator-models"><code class="docutils literal notranslate"><span class="pre">simulator</span></code> – Simulator models</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#gauss">Gauss</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gaussian-mixture">Gaussian Mixture</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#summarystats-summary-statistics"><code class="docutils literal notranslate"><span class="pre">summarystats</span></code> – Summary statistics</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#identity">Identity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mean">Mean</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#neuralnet-neural-networks"><code class="docutils literal notranslate"><span class="pre">neuralnet</span></code> – Neural networks</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#neural-network">Neural Network</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trainer">Trainer</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#neuralnet-layers-layers"><code class="docutils literal notranslate"><span class="pre">neuralnet.layers</span></code> – Layers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#fully-connected">Fully-connected</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mixture-weights">Mixture weights</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mixture-means">Mixture means</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mixture-precisions">Mixture precisions</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#kernel-kernel-functions"><code class="docutils literal notranslate"><span class="pre">kernel</span></code> – Kernel functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#epanechnikov">Epanechnikov</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Gauss</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tricube">Tricube</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id2">Uniform</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#utils-utility-functions"><code class="docutils literal notranslate"><span class="pre">utils</span></code> – Utility functions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/mackelab/delfi">Github repo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="credits.html">Credits</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">delfi</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>API Documentation</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/api.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="api-documentation">
+<h1>API Documentation<a class="headerlink" href="#api-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="inference-inference-algorithms">
+<h2><code class="docutils literal notranslate"><span class="pre">inference</span></code> – Inference algorithms<a class="headerlink" href="#inference-inference-algorithms" title="Permalink to this headline">¶</a></h2>
+<p>Inference algorithms are implemented in the inference submodule. At the moment,
+the following algorithms are implemented:</p>
+<div class="section" id="basic">
+<h3>Basic<a class="headerlink" href="#basic" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="delfi.inference.Basic">
+<em class="property">class </em><code class="descclassname">delfi.inference.</code><code class="descname">Basic</code><span class="sig-paren">(</span><em>generator</em>, <em>obs=None</em>, <em>prior_norm=False</em>, <em>pilot_samples=100</em>, <em>reg_lambda=0.01</em>, <em>seed=None</em>, <em>verbose=True</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/inference/Basic.html#Basic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.inference.Basic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">delfi.inference.BaseInference.BaseInference</span></code></p>
+<p>Basic inference algorithm</p>
+<p>Uses samples from the prior for density estimation LFI. Network can be
+trained with SVI (optional).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>generator</strong> (<em>generator instance</em>) – Generator instance</li>
+<li><strong>obs</strong> (<em>array</em><em> or </em><em>None</em>) – Observation in the format the generator returns (1 x n_summary)</li>
+<li><strong>prior_norm</strong> (<em>bool</em>) – If set to True, will z-transform params based on mean/std of prior</li>
+<li><strong>pilot_samples</strong> (<em>None</em><em> or </em><em>int</em>) – If an integer is provided, a pilot run with the given number of
+samples is run. The mean and std of the summary statistics of the
+pilot samples will be subsequently used to z-transform summary
+statistics.</li>
+<li><strong>reg_lambda</strong> (<em>float</em>) – Precision parameter for weight regularizer if svi is True</li>
+<li><strong>seed</strong> (<em>int</em><em> or </em><em>None</em>) – If provided, random number generator will be seeded</li>
+<li><strong>kwargs</strong> (<em>additional keyword arguments</em>) – <dl class="docutils">
+<dt>Additional arguments for the NeuralNet instance, including:</dt>
+<dd><dl class="first last docutils">
+<dt>n_components <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>Number of components of the mixture density</dd>
+<dt>n_hiddens <span class="classifier-delimiter">:</span> <span class="classifier">list of ints</span></dt>
+<dd>Number of hidden units per layer of the neural network</dd>
+<dt>svi <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
+<dd>Whether to use SVI version of the network or not</dd>
+</dl>
+</dd>
+</dl>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="delfi.inference.Basic.observables">
+<code class="descname">observables</code><a class="headerlink" href="#delfi.inference.Basic.observables" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dictionary containing theano variables that can be monitored while
+training the neural network.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.Basic.centre_on_obs">
+<code class="descname">centre_on_obs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#delfi.inference.Basic.centre_on_obs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Centres first-layer input onto observed summary statistics</p>
+<p>Ensures x’ = x - xo, i.e. first-layer input x’ = 0 for x = xo.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.Basic.compile_observables">
+<code class="descname">compile_observables</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#delfi.inference.Basic.compile_observables" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates observables dict</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.Basic.conditional_norm">
+<code class="descname">conditional_norm</code><span class="sig-paren">(</span><em>fcv=0.8</em>, <em>tmu=None</em>, <em>tSig=None</em>, <em>h=None</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.inference.Basic.conditional_norm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Normalizes current network output at observed summary statistics</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fcv</strong> (<em>float</em>) – <p>Fraction of total that comes from uncertainty over components, i.e.
+Var[th] = E[Var[th|z]] + Var[E[th|z]]</p>
+<blockquote>
+<div>=  (1-fcv)     +     fcv       = 1</div></blockquote>
+</li>
+<li><strong>tmu</strong> (<em>array</em>) – Target mean.</li>
+<li><strong>tSig</strong> (<em>array</em>) – Target covariance.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.Basic.gen">
+<code class="descname">gen</code><span class="sig-paren">(</span><em>n_samples</em>, <em>n_reps=1</em>, <em>prior_mixin=0</em>, <em>verbose=None</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.inference.Basic.gen" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate from generator and z-transform</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>n_samples</strong> (<em>int</em>) – Number of samples to generate</li>
+<li><strong>n_reps</strong> (<em>int</em>) – Number of repeats per parameter</li>
+<li><strong>verbose</strong> (<em>None</em><em> or </em><em>bool</em><em> or </em><em>str</em>) – If None is passed, will default to self.verbose</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.Basic.gen_newseed">
+<code class="descname">gen_newseed</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#delfi.inference.Basic.gen_newseed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a new random seed</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.Basic.loss">
+<code class="descname">loss</code><span class="sig-paren">(</span><em>N</em>, <em>round_cl=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/inference/Basic.html#Basic.loss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.inference.Basic.loss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loss function for training</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>N</strong> (<em>int</em>) – Number of training samples</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.Basic.monitor_dict_from_names">
+<code class="descname">monitor_dict_from_names</code><span class="sig-paren">(</span><em>monitor=None</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.inference.Basic.monitor_dict_from_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate monitor dict from list of variable names</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.Basic.pilot_run">
+<code class="descname">pilot_run</code><span class="sig-paren">(</span><em>n_samples</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.inference.Basic.pilot_run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pilot run in order to find parameters for z-scoring stats</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.Basic.predict">
+<code class="descname">predict</code><span class="sig-paren">(</span><em>x</em>, <em>deterministic=True</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.inference.Basic.predict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Predict posterior given x</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>x</strong> (<em>array</em>) – Stats for which to compute the posterior</li>
+<li><strong>deterministic</strong> (<em>bool</em>) – if True, mean weights are used for Bayesian network</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.Basic.reinit_network">
+<code class="descname">reinit_network</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#delfi.inference.Basic.reinit_network" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reinitializes the network instance (re-setting the weights!)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.Basic.remove_hidden_biases">
+<code class="descname">remove_hidden_biases</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#delfi.inference.Basic.remove_hidden_biases" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resets all bias weights in hidden layers to zero.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.Basic.reseed">
+<code class="descname">reseed</code><span class="sig-paren">(</span><em>seed</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.inference.Basic.reseed" title="Permalink to this definition">¶</a></dt>
+<dd><p>reseed inference method’s RNG, then generator, then network</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.Basic.reset">
+<code class="descname">reset</code><span class="sig-paren">(</span><em>seed=None</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.inference.Basic.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resets inference method to a naive state, before it has seen any
+real or simulated data. The following happens, in order:
+1) The generator’s proposal is set to None, and self.round is set to 0
+2) The inference method is reseeded if a seed is provided
+3) The network is reinitialized
+4) Any additional resetting of state specific to each inference method</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.Basic.run">
+<code class="descname">run</code><span class="sig-paren">(</span><em>n_train=100</em>, <em>n_rounds=2</em>, <em>epochs=100</em>, <em>minibatch=50</em>, <em>round_cl=1</em>, <em>stop_on_nan=False</em>, <em>monitor=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/inference/Basic.html#Basic.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.inference.Basic.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run algorithm</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>n_train</strong> (<em>int</em><em> or </em><em>list of ints</em>) – Number of data points drawn per round. If a list is passed, the
+nth list element specifies the number of training examples in the
+nth round. If there are fewer list elements than rounds, the last
+list element is used.</li>
+<li><strong>n_rounds</strong> (<em>int</em>) – Number of rounds</li>
+<li><strong>epochs</strong> (<em>int</em>) – Number of epochs used for neural network training</li>
+<li><strong>minibatch</strong> (<em>int</em>) – Size of the minibatches used for neural network training</li>
+<li><strong>monitor</strong> (<em>list of str</em>) – Names of variables to record during training along with the value
+of the loss function. The observables attribute contains all
+possible variables that can be monitored</li>
+<li><strong>round_cl</strong> (<em>int</em>) – Round after which to start continual learning</li>
+<li><strong>stop_on_nan</strong> (<em>bool</em>) – If True, will halt if NaNs in the loss are encountered</li>
+<li><strong>kwargs</strong> (<em>additional keyword arguments</em>) – Additional arguments for the Trainer instance</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>logs</strong> (<em>list of dicts</em>) – Dictionaries contain information logged while training the networks</li>
+<li><strong>trn_datasets</strong> (<em>list of (params, stats)</em>) – training datasets, z-transformed</li>
+<li><strong>posteriors</strong> (<em>list of distributions</em>) – posterior after each round</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.Basic.run_repeated">
+<code class="descname">run_repeated</code><span class="sig-paren">(</span><em>n_repeats=10</em>, <em>n_NN_inits_per_repeat=1</em>, <em>callback=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.inference.Basic.run_repeated" title="Permalink to this definition">¶</a></dt>
+<dd><p>Repeatedly run the method and collect results. Optionally, carry out
+several runs with the same initial generator RNG state but different
+neural network initializations.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>n_repeats</strong> (<em>int</em>) – Number of times to run the algorithm</li>
+<li><strong>n_NN_inits</strong> (<em>int</em>) – Number of times to</li>
+<li><strong>callback</strong> (<em>function</em>) – callback function that will be called after each run. It should take
+4 inputs: callback(log, train_data, posterior, self)</li>
+<li><strong>kwargs</strong> (<em>additional keyword arguments</em>) – Additional arguments that will be passed to the run() method</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.Basic.standardize_init">
+<code class="descname">standardize_init</code><span class="sig-paren">(</span><em>fcv=0.8</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.inference.Basic.standardize_init" title="Permalink to this definition">¶</a></dt>
+<dd><p>Standardizes the network initialization on obs</p>
+<p>Ensures output distributions for xo have mean zero and unit variance.
+Alters hidden layers to propagates x=xo as zero to the last layer, and
+alters the MoG layers to produce the desired output distribution.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="snpe">
+<h3>SNPE<a class="headerlink" href="#snpe" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="delfi.inference.SNPE">
+<em class="property">class </em><code class="descclassname">delfi.inference.</code><code class="descname">SNPE</code><span class="sig-paren">(</span><em>generator</em>, <em>obs</em>, <em>prior_norm=False</em>, <em>pilot_samples=100</em>, <em>convert_to_T=3</em>, <em>reg_lambda=0.01</em>, <em>prior_mixin=0</em>, <em>kernel=None</em>, <em>seed=None</em>, <em>verbose=True</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/inference/SNPE.html#SNPE"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.inference.SNPE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">delfi.inference.BaseInference.BaseInference</span></code></p>
+<p>Sequential neural posterior estimation (SNPE)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>generator</strong> (<em>generator instance</em>) – Generator instance</li>
+<li><strong>obs</strong> (<em>array</em>) – Observation in the format the generator returns (1 x n_summary)</li>
+<li><strong>prior_norm</strong> (<em>bool</em>) – If set to True, will z-transform params based on mean/std of prior</li>
+<li><strong>pilot_samples</strong> (<em>None</em><em> or </em><em>int</em>) – If an integer is provided, a pilot run with the given number of
+samples is run. The mean and std of the summary statistics of the
+pilot samples will be subsequently used to z-transform summary
+statistics.</li>
+<li><strong>convert_to_T</strong> (<em>None</em><em> or </em><em>int</em>) – Convert proposal distribution to Student’s T? If a number if given,
+the number specifies the degrees of freedom. None for no conversion</li>
+<li><strong>reg_lambda</strong> (<em>float</em>) – Precision parameter for weight regularizer if svi is True</li>
+<li><strong>prior_mixin</strong> (<em>float</em>) – Percentage of the prior mixed into the proposal prior. While training,
+an additional prior_mixin * N samples will be drawn from the actual prior
+in each round.</li>
+<li><strong>seed</strong> (<em>int</em><em> or </em><em>None</em>) – If provided, random number generator will be seeded</li>
+<li><strong>verbose</strong> (<em>bool</em>) – Controls whether or not progressbars are shown</li>
+<li><strong>kwargs</strong> (<em>additional keyword arguments</em>) – <dl class="docutils">
+<dt>Additional arguments for the NeuralNet instance, including:</dt>
+<dd><dl class="first last docutils">
+<dt>n_components <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>Number of components of the mixture density</dd>
+<dt>n_hiddens <span class="classifier-delimiter">:</span> <span class="classifier">list of ints</span></dt>
+<dd>Number of hidden units per layer of the neural network</dd>
+<dt>svi <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
+<dd>Whether to use SVI version of the network or not</dd>
+</dl>
+</dd>
+</dl>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="delfi.inference.SNPE.observables">
+<code class="descname">observables</code><a class="headerlink" href="#delfi.inference.SNPE.observables" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dictionary containing theano variables that can be monitored while
+training the neural network.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.SNPE.centre_on_obs">
+<code class="descname">centre_on_obs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#delfi.inference.SNPE.centre_on_obs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Centres first-layer input onto observed summary statistics</p>
+<p>Ensures x’ = x - xo, i.e. first-layer input x’ = 0 for x = xo.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.SNPE.compile_observables">
+<code class="descname">compile_observables</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#delfi.inference.SNPE.compile_observables" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates observables dict</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.SNPE.conditional_norm">
+<code class="descname">conditional_norm</code><span class="sig-paren">(</span><em>fcv=0.8</em>, <em>tmu=None</em>, <em>tSig=None</em>, <em>h=None</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.inference.SNPE.conditional_norm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Normalizes current network output at observed summary statistics</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fcv</strong> (<em>float</em>) – <p>Fraction of total that comes from uncertainty over components, i.e.
+Var[th] = E[Var[th|z]] + Var[E[th|z]]</p>
+<blockquote>
+<div>=  (1-fcv)     +     fcv       = 1</div></blockquote>
+</li>
+<li><strong>tmu</strong> (<em>array</em>) – Target mean.</li>
+<li><strong>tSig</strong> (<em>array</em>) – Target covariance.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.SNPE.gen">
+<code class="descname">gen</code><span class="sig-paren">(</span><em>n_samples</em>, <em>n_reps=1</em>, <em>prior_mixin=0</em>, <em>verbose=None</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.inference.SNPE.gen" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate from generator and z-transform</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>n_samples</strong> (<em>int</em>) – Number of samples to generate</li>
+<li><strong>n_reps</strong> (<em>int</em>) – Number of repeats per parameter</li>
+<li><strong>verbose</strong> (<em>None</em><em> or </em><em>bool</em><em> or </em><em>str</em>) – If None is passed, will default to self.verbose</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.SNPE.gen_newseed">
+<code class="descname">gen_newseed</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#delfi.inference.SNPE.gen_newseed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a new random seed</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.SNPE.loss">
+<code class="descname">loss</code><span class="sig-paren">(</span><em>N</em>, <em>round_cl=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/inference/SNPE.html#SNPE.loss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.inference.SNPE.loss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loss function for training</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>N</strong> (<em>int</em>) – Number of training samples</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.SNPE.monitor_dict_from_names">
+<code class="descname">monitor_dict_from_names</code><span class="sig-paren">(</span><em>monitor=None</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.inference.SNPE.monitor_dict_from_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate monitor dict from list of variable names</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.SNPE.pilot_run">
+<code class="descname">pilot_run</code><span class="sig-paren">(</span><em>n_samples</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.inference.SNPE.pilot_run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pilot run in order to find parameters for z-scoring stats</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.SNPE.predict">
+<code class="descname">predict</code><span class="sig-paren">(</span><em>x</em>, <em>deterministic=True</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.inference.SNPE.predict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Predict posterior given x</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>x</strong> (<em>array</em>) – Stats for which to compute the posterior</li>
+<li><strong>deterministic</strong> (<em>bool</em>) – if True, mean weights are used for Bayesian network</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.SNPE.reinit_network">
+<code class="descname">reinit_network</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#delfi.inference.SNPE.reinit_network" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reinitializes the network instance (re-setting the weights!)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.SNPE.remove_hidden_biases">
+<code class="descname">remove_hidden_biases</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#delfi.inference.SNPE.remove_hidden_biases" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resets all bias weights in hidden layers to zero.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.SNPE.reseed">
+<code class="descname">reseed</code><span class="sig-paren">(</span><em>seed</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.inference.SNPE.reseed" title="Permalink to this definition">¶</a></dt>
+<dd><p>reseed inference method’s RNG, then generator, then network</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.SNPE.reset">
+<code class="descname">reset</code><span class="sig-paren">(</span><em>seed=None</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.inference.SNPE.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resets inference method to a naive state, before it has seen any
+real or simulated data. The following happens, in order:
+1) The generator’s proposal is set to None, and self.round is set to 0
+2) The inference method is reseeded if a seed is provided
+3) The network is reinitialized
+4) Any additional resetting of state specific to each inference method</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.SNPE.run">
+<code class="descname">run</code><span class="sig-paren">(</span><em>n_train=100</em>, <em>n_rounds=2</em>, <em>epochs=100</em>, <em>minibatch=50</em>, <em>round_cl=1</em>, <em>stop_on_nan=False</em>, <em>proposal=None</em>, <em>monitor=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/inference/SNPE.html#SNPE.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.inference.SNPE.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run algorithm</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>n_train</strong> (<em>int</em><em> or </em><em>list of ints</em>) – Number of data points drawn per round. If a list is passed, the
+nth list element specifies the number of training examples in the
+nth round. If there are fewer list elements than rounds, the last
+list element is used.</li>
+<li><strong>n_rounds</strong> (<em>int</em>) – Number of rounds</li>
+<li><strong>epochs</strong> (<em>int</em>) – Number of epochs used for neural network training</li>
+<li><strong>minibatch</strong> (<em>int</em>) – Size of the minibatches used for neural network training</li>
+<li><strong>monitor</strong> (<em>list of str</em>) – Names of variables to record during training along with the value
+of the loss function. The observables attribute contains all
+possible variables that can be monitored</li>
+<li><strong>round_cl</strong> (<em>int</em>) – Round after which to start continual learning</li>
+<li><strong>stop_on_nan</strong> (<em>bool</em>) – If True, will halt if NaNs in the loss are encountered</li>
+<li><strong>proposal</strong> (<em>Distribution of None</em>) – If given, will use this distribution as the starting proposal prior</li>
+<li><strong>kwargs</strong> (<em>additional keyword arguments</em>) – Additional arguments for the Trainer instance</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>logs</strong> (<em>list of dicts</em>) – Dictionaries contain information logged while training the networks</li>
+<li><strong>trn_datasets</strong> (<em>list of (params, stats)</em>) – training datasets, z-transformed</li>
+<li><strong>posteriors</strong> (<em>list of distributions</em>) – posterior after each round</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.SNPE.run_repeated">
+<code class="descname">run_repeated</code><span class="sig-paren">(</span><em>n_repeats=10</em>, <em>n_NN_inits_per_repeat=1</em>, <em>callback=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.inference.SNPE.run_repeated" title="Permalink to this definition">¶</a></dt>
+<dd><p>Repeatedly run the method and collect results. Optionally, carry out
+several runs with the same initial generator RNG state but different
+neural network initializations.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>n_repeats</strong> (<em>int</em>) – Number of times to run the algorithm</li>
+<li><strong>n_NN_inits</strong> (<em>int</em>) – Number of times to</li>
+<li><strong>callback</strong> (<em>function</em>) – callback function that will be called after each run. It should take
+4 inputs: callback(log, train_data, posterior, self)</li>
+<li><strong>kwargs</strong> (<em>additional keyword arguments</em>) – Additional arguments that will be passed to the run() method</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.SNPE.standardize_init">
+<code class="descname">standardize_init</code><span class="sig-paren">(</span><em>fcv=0.8</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.inference.SNPE.standardize_init" title="Permalink to this definition">¶</a></dt>
+<dd><p>Standardizes the network initialization on obs</p>
+<p>Ensures output distributions for xo have mean zero and unit variance.
+Alters hidden layers to propagates x=xo as zero to the last layer, and
+alters the MoG layers to produce the desired output distribution.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="cdelfi">
+<h3>CDELFI<a class="headerlink" href="#cdelfi" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="delfi.inference.CDELFI">
+<em class="property">class </em><code class="descclassname">delfi.inference.</code><code class="descname">CDELFI</code><span class="sig-paren">(</span><em>generator</em>, <em>obs</em>, <em>prior_norm=False</em>, <em>pilot_samples=100</em>, <em>n_components=1</em>, <em>reg_lambda=0.01</em>, <em>seed=None</em>, <em>verbose=True</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/inference/CDELFI.html#CDELFI"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.inference.CDELFI" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">delfi.inference.BaseInference.BaseInference</span></code></p>
+<p>Conditional density estimation likelihood-free inference (CDE-LFI)</p>
+<p>Implementation of algorithms 1 and 2 of Papamakarios and Murray, 2016.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>generator</strong> (<em>generator instance</em>) – Generator instance</li>
+<li><strong>obs</strong> (<em>array</em>) – Observation in the format the generator returns (1 x n_summary)</li>
+<li><strong>prior_norm</strong> (<em>bool</em>) – If set to True, will z-transform params based on mean/std of prior</li>
+<li><strong>pilot_samples</strong> (<em>None</em><em> or </em><em>int</em>) – If an integer is provided, a pilot run with the given number of
+samples is run. The mean and std of the summary statistics of the
+pilot samples will be subsequently used to z-transform summary
+statistics.</li>
+<li><strong>n_components</strong> (<em>int</em>) – Number of components in final round (PM’s algorithm 2)</li>
+<li><strong>reg_lambda</strong> (<em>float</em>) – Precision parameter for weight regularizer if svi is True</li>
+<li><strong>seed</strong> (<em>int</em><em> or </em><em>None</em>) – If provided, random number generator will be seeded</li>
+<li><strong>verbose</strong> (<em>bool</em>) – Controls whether or not progressbars are shown</li>
+<li><strong>kwargs</strong> (<em>additional keyword arguments</em>) – <dl class="docutils">
+<dt>Additional arguments for the NeuralNet instance, including:</dt>
+<dd><dl class="first last docutils">
+<dt>n_hiddens <span class="classifier-delimiter">:</span> <span class="classifier">list of ints</span></dt>
+<dd>Number of hidden units per layer of the neural network</dd>
+<dt>svi <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
+<dd>Whether to use SVI version of the network or not</dd>
+</dl>
+</dd>
+</dl>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="delfi.inference.CDELFI.observables">
+<code class="descname">observables</code><a class="headerlink" href="#delfi.inference.CDELFI.observables" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dictionary containing theano variables that can be monitored while
+training the neural network.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.CDELFI.centre_on_obs">
+<code class="descname">centre_on_obs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#delfi.inference.CDELFI.centre_on_obs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Centres first-layer input onto observed summary statistics</p>
+<p>Ensures x’ = x - xo, i.e. first-layer input x’ = 0 for x = xo.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.CDELFI.compile_observables">
+<code class="descname">compile_observables</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#delfi.inference.CDELFI.compile_observables" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates observables dict</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.CDELFI.conditional_norm">
+<code class="descname">conditional_norm</code><span class="sig-paren">(</span><em>fcv=0.8</em>, <em>tmu=None</em>, <em>tSig=None</em>, <em>h=None</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.inference.CDELFI.conditional_norm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Normalizes current network output at observed summary statistics</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fcv</strong> (<em>float</em>) – <p>Fraction of total that comes from uncertainty over components, i.e.
+Var[th] = E[Var[th|z]] + Var[E[th|z]]</p>
+<blockquote>
+<div>=  (1-fcv)     +     fcv       = 1</div></blockquote>
+</li>
+<li><strong>tmu</strong> (<em>array</em>) – Target mean.</li>
+<li><strong>tSig</strong> (<em>array</em>) – Target covariance.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.CDELFI.gen">
+<code class="descname">gen</code><span class="sig-paren">(</span><em>n_samples</em>, <em>n_reps=1</em>, <em>prior_mixin=0</em>, <em>verbose=None</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.inference.CDELFI.gen" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate from generator and z-transform</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>n_samples</strong> (<em>int</em>) – Number of samples to generate</li>
+<li><strong>n_reps</strong> (<em>int</em>) – Number of repeats per parameter</li>
+<li><strong>verbose</strong> (<em>None</em><em> or </em><em>bool</em><em> or </em><em>str</em>) – If None is passed, will default to self.verbose</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.CDELFI.gen_newseed">
+<code class="descname">gen_newseed</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#delfi.inference.CDELFI.gen_newseed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a new random seed</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.CDELFI.loss">
+<code class="descname">loss</code><span class="sig-paren">(</span><em>N</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/inference/CDELFI.html#CDELFI.loss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.inference.CDELFI.loss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loss function for training</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>N</strong> (<em>int</em>) – Number of training samples</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.CDELFI.monitor_dict_from_names">
+<code class="descname">monitor_dict_from_names</code><span class="sig-paren">(</span><em>monitor=None</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.inference.CDELFI.monitor_dict_from_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate monitor dict from list of variable names</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.CDELFI.pilot_run">
+<code class="descname">pilot_run</code><span class="sig-paren">(</span><em>n_samples</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.inference.CDELFI.pilot_run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pilot run in order to find parameters for z-scoring stats</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.CDELFI.predict">
+<code class="descname">predict</code><span class="sig-paren">(</span><em>x</em>, <em>threshold=0.05</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/inference/CDELFI.html#CDELFI.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.inference.CDELFI.predict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Predict posterior given x</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>x</strong> (<em>array</em>) – Stats for which to compute the posterior</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.CDELFI.reinit_network">
+<code class="descname">reinit_network</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#delfi.inference.CDELFI.reinit_network" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reinitializes the network instance (re-setting the weights!)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.CDELFI.remove_hidden_biases">
+<code class="descname">remove_hidden_biases</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#delfi.inference.CDELFI.remove_hidden_biases" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resets all bias weights in hidden layers to zero.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.CDELFI.reseed">
+<code class="descname">reseed</code><span class="sig-paren">(</span><em>seed</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.inference.CDELFI.reseed" title="Permalink to this definition">¶</a></dt>
+<dd><p>reseed inference method’s RNG, then generator, then network</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.CDELFI.reset">
+<code class="descname">reset</code><span class="sig-paren">(</span><em>seed=None</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.inference.CDELFI.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resets inference method to a naive state, before it has seen any
+real or simulated data. The following happens, in order:
+1) The generator’s proposal is set to None, and self.round is set to 0
+2) The inference method is reseeded if a seed is provided
+3) The network is reinitialized
+4) Any additional resetting of state specific to each inference method</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.CDELFI.run">
+<code class="descname">run</code><span class="sig-paren">(</span><em>n_train=100</em>, <em>n_rounds=2</em>, <em>epochs=100</em>, <em>minibatch=50</em>, <em>monitor=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/inference/CDELFI.html#CDELFI.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.inference.CDELFI.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run algorithm</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>n_train</strong> (<em>int</em><em> or </em><em>list of ints</em>) – Number of data points drawn per round. If a list is passed, the
+nth list element specifies the number of training examples in the
+nth round. If there are fewer list elements than rounds, the last
+list element is used.</li>
+<li><strong>n_rounds</strong> (<em>int</em>) – Number of rounds</li>
+<li><strong>epochs</strong> (<em>int</em>) – Number of epochs used for neural network training</li>
+<li><strong>minibatch</strong> (<em>int</em>) – Size of the minibatches used for neural network training</li>
+<li><strong>monitor</strong> (<em>list of str</em>) – Names of variables to record during training along with the value
+of the loss function. The observables attribute contains all
+possible variables that can be monitored</li>
+<li><strong>kwargs</strong> (<em>additional keyword arguments</em>) – Additional arguments for the Trainer instance</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>logs</strong> (<em>list of dicts</em>) – Dictionaries contain information logged while training the networks</li>
+<li><strong>trn_datasets</strong> (<em>list of (params, stats)</em>) – training datasets, z-transformed</li>
+<li><strong>posteriors</strong> (<em>list of posteriors</em>) – posterior after each round</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.CDELFI.run_repeated">
+<code class="descname">run_repeated</code><span class="sig-paren">(</span><em>n_repeats=10</em>, <em>n_NN_inits_per_repeat=1</em>, <em>callback=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.inference.CDELFI.run_repeated" title="Permalink to this definition">¶</a></dt>
+<dd><p>Repeatedly run the method and collect results. Optionally, carry out
+several runs with the same initial generator RNG state but different
+neural network initializations.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>n_repeats</strong> (<em>int</em>) – Number of times to run the algorithm</li>
+<li><strong>n_NN_inits</strong> (<em>int</em>) – Number of times to</li>
+<li><strong>callback</strong> (<em>function</em>) – callback function that will be called after each run. It should take
+4 inputs: callback(log, train_data, posterior, self)</li>
+<li><strong>kwargs</strong> (<em>additional keyword arguments</em>) – Additional arguments that will be passed to the run() method</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.inference.CDELFI.standardize_init">
+<code class="descname">standardize_init</code><span class="sig-paren">(</span><em>fcv=0.8</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.inference.CDELFI.standardize_init" title="Permalink to this definition">¶</a></dt>
+<dd><p>Standardizes the network initialization on obs</p>
+<p>Ensures output distributions for xo have mean zero and unit variance.
+Alters hidden layers to propagates x=xo as zero to the last layer, and
+alters the MoG layers to produce the desired output distribution.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="generator-generator">
+<h2><code class="docutils literal notranslate"><span class="pre">generator</span></code> – Generator<a class="headerlink" href="#generator-generator" title="Permalink to this headline">¶</a></h2>
+<p>A generator is an object taking a simulator, prior distributions on simulator parameters, and summary statistics, as inputs.</p>
+<p>Details of the generator specification are in the generator base class, <code class="docutils literal notranslate"><span class="pre">BaseGenerator</span></code>.</p>
+<div class="section" id="default">
+<h3>Default<a class="headerlink" href="#default" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="delfi.generator.Default">
+<em class="property">class </em><code class="descclassname">delfi.generator.</code><code class="descname">Default</code><span class="sig-paren">(</span><em>model</em>, <em>prior</em>, <em>summary</em>, <em>seed=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/generator/Default.html#Default"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.generator.Default" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">delfi.generator.BaseGenerator.BaseGenerator</span></code></p>
+<p>Generator</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>model</strong> (<em>Simulator instance</em>) – Forward model</li>
+<li><strong>prior</strong> (<em>Distribution</em><em> or </em><em>Mixture instance</em>) – Prior over parameters</li>
+<li><strong>summary</strong> (<em>SummaryStats instance</em>) – Summary statistics</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="delfi.generator.Default.proposal">
+<code class="descname">proposal</code><a class="headerlink" href="#delfi.generator.Default.proposal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Proposal prior over parameters. If specified, will generate
+samples given parameters drawn from proposal distribution rather
+than samples drawn from prior when <cite>gen</cite> is called.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">None or Distribution or Mixture instance</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.generator.Default.gen">
+<code class="descname">gen</code><span class="sig-paren">(</span><em>n_samples</em>, <em>n_reps=1</em>, <em>skip_feedback=False</em>, <em>prior_mixin=0</em>, <em>minibatch=50</em>, <em>keep_data=True</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.generator.Default.gen" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draw parameters and run forward model</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>n_samples</strong> (<em>int</em>) – Number of samples</li>
+<li><strong>n_reps</strong> (<em>int</em>) – Number of repetitions per parameter sample</li>
+<li><strong>skip_feedback</strong> (<em>bool</em>) – If True, feedback checks on params, data and sum stats are skipped</li>
+<li><strong>verbose</strong> (<em>bool</em><em> or </em><em>str</em>) – If False, will not display progress bars. If a string is passed,
+it will be appended to the description of the progress bar.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>params</strong> (<em>n_samples x n_reps x n_params</em>) – Parameters</li>
+<li><strong>stats</strong> (<em>n_samples x n_reps x n_summary</em>) – Summary statistics of data</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.generator.Default.gen_newseed">
+<code class="descname">gen_newseed</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#delfi.generator.Default.gen_newseed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a new random seed</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.generator.Default.reseed">
+<code class="descname">reseed</code><span class="sig-paren">(</span><em>seed</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.generator.Default.reseed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Carries out the following operations, in order:
+1) Reseeds the master RNG for the generator object, using the input seed
+2) Reseeds the prior from the master RNG. This may cause additional
+distributions to be reseeded using the prior’s RNG (e.g. if the prior is
+a mixture)
+3) Reseeds the simulator RNG, from the master RNG
+4) Reseeds the proposal, if present</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="distribution-distributions">
+<h2><code class="docutils literal notranslate"><span class="pre">distribution</span></code> – Distributions<a class="headerlink" href="#distribution-distributions" title="Permalink to this headline">¶</a></h2>
+<p>Several probability distributions are implemented in the module <code class="docutils literal notranslate"><span class="pre">delfi.distribution</span></code>.</p>
+<p>The general interface for distributions is specified in the abstract class
+<code class="docutils literal notranslate"><span class="pre">BaseDistribution.py</span></code>: Each distribution needs to implement the abstract
+methods  and properties of this class. Mixture distributions and the respective base class are in the module <code class="docutils literal notranslate"><span class="pre">delfi.distribution.mixture</span></code>.</p>
+<div class="section" id="discrete">
+<h3>Discrete<a class="headerlink" href="#discrete" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="delfi.distribution.Discrete">
+<em class="property">class </em><code class="descclassname">delfi.distribution.</code><code class="descname">Discrete</code><span class="sig-paren">(</span><em>p</em>, <em>seed=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/distribution/Discrete.html#Discrete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.distribution.Discrete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">delfi.distribution.BaseDistribution.BaseDistribution</span></code></p>
+<p>Discrete distribution</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>p</strong> (<em>list</em><em> or </em><em>np.array</em><em>, </em><em>1d</em>) – Probabilities of elements, must sum to 1</li>
+<li><strong>seed</strong> (<em>int</em><em> or </em><em>None</em>) – If provided, random number generator will be seeded</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="delfi.distribution.Discrete.eval">
+<code class="descname">eval</code><span class="sig-paren">(</span><em>x</em>, <em>ii=None</em>, <em>log=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/distribution/Discrete.html#Discrete.eval"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.distribution.Discrete.eval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to evaluate pdf</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> (<em>int</em><em> or </em><em>list</em><em> or </em><em>np.array</em>) – Rows are inputs to evaluate at</li>
+<li><strong>ii</strong> (<em>list</em>) – A list of indices specifying which marginal to evaluate.
+If None, the joint pdf is evaluated</li>
+<li><strong>log</strong> (<em>bool</em><em>, </em><em>defaulting to True</em>) – If True, the log pdf is evaluated</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">scalar</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.distribution.Discrete.gen">
+<code class="descname">gen</code><span class="sig-paren">(</span><em>n_samples=1</em>, <em>seed=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/distribution/Discrete.html#Discrete.gen"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.distribution.Discrete.gen" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to generate samples</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n_samples</strong> (<em>int</em>) – Number of samples to generate</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">n_samples x self.ndim</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.distribution.Discrete.gen_newseed">
+<code class="descname">gen_newseed</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#delfi.distribution.Discrete.gen_newseed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a new random seed</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="delfi.distribution.Discrete.mean">
+<code class="descname">mean</code><a class="headerlink" href="#delfi.distribution.Discrete.mean" title="Permalink to this definition">¶</a></dt>
+<dd><p>Means</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.distribution.Discrete.reseed">
+<code class="descname">reseed</code><span class="sig-paren">(</span><em>seed</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.distribution.Discrete.reseed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reseeds the distribution’s RNG</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="delfi.distribution.Discrete.std">
+<code class="descname">std</code><a class="headerlink" href="#delfi.distribution.Discrete.std" title="Permalink to this definition">¶</a></dt>
+<dd><p>Standard deviations of marginals</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="gaussian">
+<h3>Gaussian<a class="headerlink" href="#gaussian" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="delfi.distribution.Gaussian">
+<em class="property">class </em><code class="descclassname">delfi.distribution.</code><code class="descname">Gaussian</code><span class="sig-paren">(</span><em>m=None</em>, <em>P=None</em>, <em>U=None</em>, <em>S=None</em>, <em>Pm=None</em>, <em>seed=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/distribution/Gaussian.html#Gaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.distribution.Gaussian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">delfi.distribution.BaseDistribution.BaseDistribution</span></code></p>
+<p>Gaussian distribution</p>
+<p>Initialize a gaussian pdf given a valid combination of its parameters.
+Valid combinations are: m-P, m-U, m-S, Pm-P, Pm-U, Pm-S</p>
+<p>Focus is on efficient multiplication, division and sampling.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>m</strong> (<em>list</em><em> or </em><em>np.array</em><em>, </em><em>1d</em>) – Mean</li>
+<li><strong>P</strong> (<em>list</em><em> or </em><em>np.array</em><em>, </em><em>2d</em>) – Precision</li>
+<li><strong>U</strong> (<em>list</em><em> or </em><em>np.array</em><em>, </em><em>2d</em>) – Upper triangular precision factor such that U’U = P</li>
+<li><strong>S</strong> (<em>list</em><em> or </em><em>np.array</em><em>, </em><em>2d</em>) – Covariance</li>
+<li><strong>C</strong> (<em>list</em><em> or </em><em>np.array</em><em>, </em><em>2d</em>) – Upper or lower triangular covariance factor, in any case S = C’C</li>
+<li><strong>Pm</strong> (<em>list</em><em> or </em><em>np.array</em><em>, </em><em>1d</em>) – Precision times mean such that P*m = Pm</li>
+<li><strong>seed</strong> (<em>int</em><em> or </em><em>None</em>) – If provided, random number generator will be seeded</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="delfi.distribution.Gaussian.convert_to_T">
+<code class="descname">convert_to_T</code><span class="sig-paren">(</span><em>dof</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/distribution/Gaussian.html#Gaussian.convert_to_T"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.distribution.Gaussian.convert_to_T" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts Gaussian to Student T</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dof</strong> (<em>int</em>) – Degrees of freedom</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.distribution.Gaussian.eval">
+<code class="descname">eval</code><span class="sig-paren">(</span><em>x</em>, <em>ii=None</em>, <em>log=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/distribution/Gaussian.html#Gaussian.eval"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.distribution.Gaussian.eval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to evaluate pdf</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> (<em>int</em><em> or </em><em>list</em><em> or </em><em>np.array</em>) – Rows are inputs to evaluate at</li>
+<li><strong>ii</strong> (<em>list</em>) – A list of indices specifying which marginal to evaluate.
+If None, the joint pdf is evaluated</li>
+<li><strong>log</strong> (<em>bool</em><em>, </em><em>defaulting to True</em>) – If True, the log pdf is evaluated</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">scalar</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.distribution.Gaussian.gen">
+<code class="descname">gen</code><span class="sig-paren">(</span><em>n_samples=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/distribution/Gaussian.html#Gaussian.gen"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.distribution.Gaussian.gen" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to generate samples</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n_samples</strong> (<em>int</em>) – Number of samples to generate</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">n_samples x self.ndim</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.distribution.Gaussian.gen_newseed">
+<code class="descname">gen_newseed</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#delfi.distribution.Gaussian.gen_newseed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a new random seed</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.distribution.Gaussian.kl">
+<code class="descname">kl</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/distribution/Gaussian.html#Gaussian.kl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.distribution.Gaussian.kl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the KL divergence from this to another Gaussian</p>
+<p>Direction of KL is KL(this | other)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="delfi.distribution.Gaussian.mean">
+<code class="descname">mean</code><a class="headerlink" href="#delfi.distribution.Gaussian.mean" title="Permalink to this definition">¶</a></dt>
+<dd><p>Means</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.distribution.Gaussian.reseed">
+<code class="descname">reseed</code><span class="sig-paren">(</span><em>seed</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.distribution.Gaussian.reseed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reseeds the distribution’s RNG</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="delfi.distribution.Gaussian.std">
+<code class="descname">std</code><a class="headerlink" href="#delfi.distribution.Gaussian.std" title="Permalink to this definition">¶</a></dt>
+<dd><p>Standard deviations of marginals</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.distribution.Gaussian.ztrans_inv">
+<code class="descname">ztrans_inv</code><span class="sig-paren">(</span><em>mean</em>, <em>std</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/distribution/Gaussian.html#Gaussian.ztrans_inv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.distribution.Gaussian.ztrans_inv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Z-transform inverse</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>mean</strong> (<em>array</em>) – Mean vector</li>
+<li><strong>std</strong> (<em>array</em>) – Std vector</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">Gaussian distribution</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="student-s-t">
+<h3>Student’s T<a class="headerlink" href="#student-s-t" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="delfi.distribution.StudentsT">
+<em class="property">class </em><code class="descclassname">delfi.distribution.</code><code class="descname">StudentsT</code><span class="sig-paren">(</span><em>m</em>, <em>S</em>, <em>dof</em>, <em>seed=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/distribution/StudentsT.html#StudentsT"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.distribution.StudentsT" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">delfi.distribution.BaseDistribution.BaseDistribution</span></code></p>
+<p>Student’s T distribution</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>m</strong> (<em>list</em><em> or </em><em>np.array</em><em>, </em><em>1d</em>) – Mean</li>
+<li><strong>S</strong> (<em>list</em><em> or </em><em>np.array</em><em>, </em><em>1d</em>) – Covariance</li>
+<li><strong>dof</strong> (<em>int</em>) – Degrees of freedom</li>
+<li><strong>seed</strong> (<em>int</em><em> or </em><em>None</em>) – If provided, random number generator will be seeded</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="delfi.distribution.StudentsT.eval">
+<code class="descname">eval</code><span class="sig-paren">(</span><em>x</em>, <em>ii=None</em>, <em>log=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/distribution/StudentsT.html#StudentsT.eval"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.distribution.StudentsT.eval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to evaluate pdf</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> (<em>int</em><em> or </em><em>list</em><em> or </em><em>np.array</em>) – Rows are inputs to evaluate at</li>
+<li><strong>ii</strong> (<em>list</em>) – A list of indices specifying which marginal to evaluate.
+If None, the joint pdf is evaluated</li>
+<li><strong>log</strong> (<em>bool</em><em>, </em><em>defaulting to True</em>) – If True, the log pdf is evaluated</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">scalar</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.distribution.StudentsT.gen">
+<code class="descname">gen</code><span class="sig-paren">(</span><em>n_samples=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/distribution/StudentsT.html#StudentsT.gen"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.distribution.StudentsT.gen" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to generate samples</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n_samples</strong> (<em>int</em>) – Number of samples to generate</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">n_samples x self.ndim</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.distribution.StudentsT.gen_newseed">
+<code class="descname">gen_newseed</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#delfi.distribution.StudentsT.gen_newseed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a new random seed</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="delfi.distribution.StudentsT.mean">
+<code class="descname">mean</code><a class="headerlink" href="#delfi.distribution.StudentsT.mean" title="Permalink to this definition">¶</a></dt>
+<dd><p>Means</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.distribution.StudentsT.reseed">
+<code class="descname">reseed</code><span class="sig-paren">(</span><em>seed</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.distribution.StudentsT.reseed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reseeds the distribution’s RNG</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="delfi.distribution.StudentsT.std">
+<code class="descname">std</code><a class="headerlink" href="#delfi.distribution.StudentsT.std" title="Permalink to this definition">¶</a></dt>
+<dd><p>Standard deviations of marginals</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="uniform">
+<h3>Uniform<a class="headerlink" href="#uniform" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="delfi.distribution.Uniform">
+<em class="property">class </em><code class="descclassname">delfi.distribution.</code><code class="descname">Uniform</code><span class="sig-paren">(</span><em>lower=0.0</em>, <em>upper=1.0</em>, <em>seed=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/distribution/Uniform.html#Uniform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.distribution.Uniform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">delfi.distribution.BaseDistribution.BaseDistribution</span></code></p>
+<p>Uniform distribution</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>lower</strong> (<em>list</em><em>, or </em><em>np.array</em><em>, </em><em>1d</em>) – Lower bound(s)</li>
+<li><strong>upper</strong> (<em>list</em><em>, or </em><em>np.array</em><em>, </em><em>1d</em>) – Upper bound(s)</li>
+<li><strong>seed</strong> (<em>int</em><em> or </em><em>None</em>) – If provided, random number generator will be seeded</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="delfi.distribution.Uniform.eval">
+<code class="descname">eval</code><span class="sig-paren">(</span><em>x</em>, <em>ii=None</em>, <em>log=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/distribution/Uniform.html#Uniform.eval"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.distribution.Uniform.eval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to evaluate pdf</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> (<em>int</em><em> or </em><em>list</em><em> or </em><em>np.array</em>) – Rows are inputs to evaluate at</li>
+<li><strong>ii</strong> (<em>list</em>) – A list of indices specifying which marginal to evaluate.
+If None, the joint pdf is evaluated</li>
+<li><strong>log</strong> (<em>bool</em><em>, </em><em>defaulting to True</em>) – If True, the log pdf is evaluated</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">scalar</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.distribution.Uniform.gen">
+<code class="descname">gen</code><span class="sig-paren">(</span><em>n_samples=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/distribution/Uniform.html#Uniform.gen"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.distribution.Uniform.gen" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to generate samples</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n_samples</strong> (<em>int</em>) – Number of samples to generate</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">n_samples x self.ndim</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.distribution.Uniform.gen_newseed">
+<code class="descname">gen_newseed</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#delfi.distribution.Uniform.gen_newseed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a new random seed</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="delfi.distribution.Uniform.mean">
+<code class="descname">mean</code><a class="headerlink" href="#delfi.distribution.Uniform.mean" title="Permalink to this definition">¶</a></dt>
+<dd><p>Means</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.distribution.Uniform.reseed">
+<code class="descname">reseed</code><span class="sig-paren">(</span><em>seed</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.distribution.Uniform.reseed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reseeds the distribution’s RNG</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="delfi.distribution.Uniform.std">
+<code class="descname">std</code><a class="headerlink" href="#delfi.distribution.Uniform.std" title="Permalink to this definition">¶</a></dt>
+<dd><p>Standard deviations of marginals</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="distribution-mixture-mixtures">
+<h2><code class="docutils literal notranslate"><span class="pre">distribution.mixture</span></code> – Mixtures<a class="headerlink" href="#distribution-mixture-mixtures" title="Permalink to this headline">¶</a></h2>
+<p>Mixture distributions and the respective base class are in the module <code class="docutils literal notranslate"><span class="pre">delfi.distribution.mixture</span></code>.</p>
+<div class="section" id="mixture-of-gaussians">
+<h3>Mixture of Gaussians<a class="headerlink" href="#mixture-of-gaussians" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="delfi.distribution.mixture.MoG">
+<em class="property">class </em><code class="descclassname">delfi.distribution.mixture.</code><code class="descname">MoG</code><span class="sig-paren">(</span><em>a</em>, <em>ms=None</em>, <em>Ps=None</em>, <em>Us=None</em>, <em>Ss=None</em>, <em>xs=None</em>, <em>seed=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/distribution/mixture/GaussianMixture.html#MoG"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.distribution.mixture.MoG" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">delfi.distribution.mixture.BaseMixture.BaseMixture</span></code></p>
+<p>Mixture of Gaussians</p>
+<p>Creates a MoG with a valid combination of parameters or an already given
+list of Gaussian variables.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>a</strong> (<em>list</em><em> or </em><em>np.array</em><em>, </em><em>1d</em>) – Mixing coefficients</li>
+<li><strong>ms</strong> (<em>list</em><em>, </em><em>length n_components</em>) – Means</li>
+<li><strong>Ps</strong> (<em>list</em><em>, </em><em>length n_components</em>) – Precisions</li>
+<li><strong>Us</strong> (<em>list</em><em>, </em><em>length n_components</em>) – Precision factors such that U’U = P</li>
+<li><strong>Ss</strong> (<em>list</em><em>, </em><em>length n_components</em>) – Covariances</li>
+<li><strong>xs</strong> (<em>list</em><em>, </em><em>length n_components</em>) – List of gaussian variables</li>
+<li><strong>seed</strong> (<em>int</em><em> or </em><em>None</em>) – If provided, random number generator will be seeded</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="delfi.distribution.mixture.MoG.calc_mean_and_cov">
+<code class="descname">calc_mean_and_cov</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/distribution/mixture/GaussianMixture.html#MoG.calc_mean_and_cov"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.distribution.mixture.MoG.calc_mean_and_cov" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the mean vector and the covariance matrix of the MoG</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.distribution.mixture.MoG.convert_to_E">
+<code class="descname">convert_to_E</code><span class="sig-paren">(</span><em>beta=0.99</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/distribution/mixture/GaussianMixture.html#MoG.convert_to_E"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.distribution.mixture.MoG.convert_to_E" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert to Mixture of ellipsoidal distributions</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.distribution.mixture.MoG.convert_to_T">
+<code class="descname">convert_to_T</code><span class="sig-paren">(</span><em>dofs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/distribution/mixture/GaussianMixture.html#MoG.convert_to_T"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.distribution.mixture.MoG.convert_to_T" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert to Mixture of Student’s T distributions</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dofs</strong> (<em>int</em><em> or </em><em>list of ints</em>) – Degrees of freedom of component distributions</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.distribution.mixture.MoG.eval">
+<code class="descname">eval</code><span class="sig-paren">(</span><em>x</em>, <em>ii=None</em>, <em>log=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/distribution/mixture/GaussianMixture.html#MoG.eval"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.distribution.mixture.MoG.eval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to evaluate pdf</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> (<em>int</em><em> or </em><em>list</em><em> or </em><em>np.array</em>) – Rows are inputs to evaluate at</li>
+<li><strong>ii</strong> (<em>list</em>) – A list of indices specifying which marginal to evaluate.
+If None, the joint pdf is evaluated</li>
+<li><strong>log</strong> (<em>bool</em><em>, </em><em>defaulting to True</em>) – If True, the log pdf is evaluated</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">scalar</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.distribution.mixture.MoG.gen">
+<code class="descname">gen</code><span class="sig-paren">(</span><em>n_samples=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/distribution/mixture/GaussianMixture.html#MoG.gen"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.distribution.mixture.MoG.gen" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to generate samples</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n_samples</strong> (<em>int</em>) – Number of samples to generate</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">n_samples x self.ndim</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.distribution.mixture.MoG.gen_comp">
+<code class="descname">gen_comp</code><span class="sig-paren">(</span><em>n_samples</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.distribution.mixture.MoG.gen_comp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate component index according to self.a</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.distribution.mixture.MoG.gen_newseed">
+<code class="descname">gen_newseed</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#delfi.distribution.mixture.MoG.gen_newseed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a new random seed</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.distribution.mixture.MoG.kl">
+<code class="descname">kl</code><span class="sig-paren">(</span><em>other</em>, <em>n_samples=10000</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.distribution.mixture.MoG.kl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimates the KL from this to another PDF</p>
+<p>KL(this | other), using Monte Carlo</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="delfi.distribution.mixture.MoG.mean">
+<code class="descname">mean</code><a class="headerlink" href="#delfi.distribution.mixture.MoG.mean" title="Permalink to this definition">¶</a></dt>
+<dd><p>Means</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.distribution.mixture.MoG.project_to_gaussian">
+<code class="descname">project_to_gaussian</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/distribution/mixture/GaussianMixture.html#MoG.project_to_gaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.distribution.mixture.MoG.project_to_gaussian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a gaussian with the same mean and precision as the mog</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.distribution.mixture.MoG.prune_negligible_components">
+<code class="descname">prune_negligible_components</code><span class="sig-paren">(</span><em>threshold</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.distribution.mixture.MoG.prune_negligible_components" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prune components</p>
+<p>Removes all the components whose mixing coefficient is less
+than a threshold.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.distribution.mixture.MoG.reseed">
+<code class="descname">reseed</code><span class="sig-paren">(</span><em>seed</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.distribution.mixture.MoG.reseed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reseeds the following RNGs in the following order:
+1) Master RNG for the mixture object, using the input seed
+2) RNG for the discrete distribution used to sample components. The seed
+is generated using the master RNG.
+3) RNG for each mixture component, in order. Each seed is generated by
+the master RNG.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="delfi.distribution.mixture.MoG.std">
+<code class="descname">std</code><a class="headerlink" href="#delfi.distribution.mixture.MoG.std" title="Permalink to this definition">¶</a></dt>
+<dd><p>Standard deviations of marginals</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.distribution.mixture.MoG.ztrans_inv">
+<code class="descname">ztrans_inv</code><span class="sig-paren">(</span><em>mean</em>, <em>std</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/distribution/mixture/GaussianMixture.html#MoG.ztrans_inv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.distribution.mixture.MoG.ztrans_inv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Z-transform inverse</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="mixture-of-student-s-t">
+<h3>Mixture of Student’s T<a class="headerlink" href="#mixture-of-student-s-t" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="delfi.distribution.mixture.MoT">
+<em class="property">class </em><code class="descclassname">delfi.distribution.mixture.</code><code class="descname">MoT</code><span class="sig-paren">(</span><em>a</em>, <em>ms=None</em>, <em>Ss=None</em>, <em>dofs=None</em>, <em>xs=None</em>, <em>seed=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/distribution/mixture/StudentsTMixture.html#MoT"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.distribution.mixture.MoT" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">delfi.distribution.mixture.BaseMixture.BaseMixture</span></code></p>
+<p>Mixture of Student’s T distributions</p>
+<p>Creates a MoT with a valid combination of parameters or an already given
+list of gaussian variables.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>a</strong> (<em>list</em><em> or </em><em>1d array</em>) – Mixing coefficients</li>
+<li><strong>ms</strong> (<em>list of length n_components</em>) – Means</li>
+<li><strong>Ss</strong> (<em>list of length n_components</em>) – Covariances</li>
+<li><strong>dofs</strong> (<em>list of length n_components</em>) – Degrees of freedom</li>
+<li><strong>xs</strong> (<em>list of length n_components</em>) – List of Student’s T distributions</li>
+<li><strong>seed</strong> (<em>int</em><em> or </em><em>None</em>) – If provided, random number generator will be seeded</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="delfi.distribution.mixture.MoT.eval">
+<code class="descname">eval</code><span class="sig-paren">(</span><em>x</em>, <em>ii=None</em>, <em>log=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/distribution/mixture/StudentsTMixture.html#MoT.eval"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.distribution.mixture.MoT.eval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to evaluate pdf</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> (<em>int</em><em> or </em><em>list</em><em> or </em><em>np.array</em>) – Rows are inputs to evaluate at</li>
+<li><strong>ii</strong> (<em>list</em>) – A list of indices specifying which marginal to evaluate.
+If None, the joint pdf is evaluated</li>
+<li><strong>log</strong> (<em>bool</em><em>, </em><em>defaulting to True</em>) – If True, the log pdf is evaluated</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">scalar</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.distribution.mixture.MoT.gen">
+<code class="descname">gen</code><span class="sig-paren">(</span><em>n_samples=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/distribution/mixture/StudentsTMixture.html#MoT.gen"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.distribution.mixture.MoT.gen" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to generate samples</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n_samples</strong> (<em>int</em>) – Number of samples to generate</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">n_samples x self.ndim</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.distribution.mixture.MoT.gen_comp">
+<code class="descname">gen_comp</code><span class="sig-paren">(</span><em>n_samples</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.distribution.mixture.MoT.gen_comp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate component index according to self.a</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.distribution.mixture.MoT.gen_newseed">
+<code class="descname">gen_newseed</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#delfi.distribution.mixture.MoT.gen_newseed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a new random seed</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.distribution.mixture.MoT.kl">
+<code class="descname">kl</code><span class="sig-paren">(</span><em>other</em>, <em>n_samples=10000</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.distribution.mixture.MoT.kl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimates the KL from this to another PDF</p>
+<p>KL(this | other), using Monte Carlo</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.distribution.mixture.MoT.prune_negligible_components">
+<code class="descname">prune_negligible_components</code><span class="sig-paren">(</span><em>threshold</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.distribution.mixture.MoT.prune_negligible_components" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prune components</p>
+<p>Removes all the components whose mixing coefficient is less
+than a threshold.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.distribution.mixture.MoT.reseed">
+<code class="descname">reseed</code><span class="sig-paren">(</span><em>seed</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.distribution.mixture.MoT.reseed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reseeds the following RNGs in the following order:
+1) Master RNG for the mixture object, using the input seed
+2) RNG for the discrete distribution used to sample components. The seed
+is generated using the master RNG.
+3) RNG for each mixture component, in order. Each seed is generated by
+the master RNG.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="simulator-simulator-models">
+<h2><code class="docutils literal notranslate"><span class="pre">simulator</span></code> – Simulator models<a class="headerlink" href="#simulator-simulator-models" title="Permalink to this headline">¶</a></h2>
+<p>Forward models, which can be written in any programming language, need to be
+wrapped in class that inherits from <code class="docutils literal notranslate"><span class="pre">delfi.simulator.SimulatorBase</span></code>. The
+base class defines the interface.</p>
+<p>The following simulators are currently part of <code class="docutils literal notranslate"><span class="pre">delfi</span></code> for testing and to
+provide examples:</p>
+<div class="section" id="gauss">
+<h3>Gauss<a class="headerlink" href="#gauss" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="delfi.simulator.Gauss">
+<em class="property">class </em><code class="descclassname">delfi.simulator.</code><code class="descname">Gauss</code><span class="sig-paren">(</span><em>dim=1</em>, <em>noise_cov=0.1</em>, <em>seed=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/simulator/Gauss.html#Gauss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.simulator.Gauss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">delfi.simulator.BaseSimulator.BaseSimulator</span></code></p>
+<p>Gauss simulator</p>
+<p>Toy model that draws data from a distribution centered on theta with
+fixed noise.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>dim</strong> (<em>int</em>) – Number of dimensions of parameters</li>
+<li><strong>noise_cov</strong> (<em>float</em>) – Covariance of noise on observations</li>
+<li><strong>seed</strong> (<em>int</em><em> or </em><em>None</em>) – If set, randomness is seeded</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="delfi.simulator.Gauss.gen">
+<code class="descname">gen</code><span class="sig-paren">(</span><em>params_list</em>, <em>n_reps=1</em>, <em>pbar=None</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.simulator.Gauss.gen" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward model for simulator for list of parameters</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>params_list</strong> (<em>list of lists</em><em> or </em><em>1-d np.arrays</em>) – List of parameter vectors, each of which will be simulated</li>
+<li><strong>n_reps</strong> (<em>int</em>) – If greater than 1, generate multiple samples given param</li>
+<li><strong>pbar</strong> (<em>tqdm.tqdm</em><em> or </em><em>None</em>) – If None, will do nothing. Otherwise it will call pbar.update(1)
+after each sample.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>data_list</strong> – Repetitions are runs with the same parameter set, different
+repetitions. Each dictionary must contain a key data that contains
+the results of the forward run. Additional entries can be present.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list of lists containing n_reps dicts with data</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.simulator.Gauss.gen_newseed">
+<code class="descname">gen_newseed</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#delfi.simulator.Gauss.gen_newseed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a new random seed</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.simulator.Gauss.gen_single">
+<code class="descname">gen_single</code><span class="sig-paren">(</span><em>param</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/simulator/Gauss.html#Gauss.gen_single"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.simulator.Gauss.gen_single" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward model for simulator for single parameter set</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>params</strong> (<em>list</em><em> or </em><em>np.array</em><em>, </em><em>1d of length dim_param</em>) – Parameter vector</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>dict</strong> – The dictionary must contain a key data that contains the results of
+the forward run. Additional entries can be present.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">dictionary with data</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.simulator.Gauss.reseed">
+<code class="descname">reseed</code><span class="sig-paren">(</span><em>seed</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.simulator.Gauss.reseed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reseeds the distribution’s RNG</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="gaussian-mixture">
+<h3>Gaussian Mixture<a class="headerlink" href="#gaussian-mixture" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="delfi.simulator.GaussMixture">
+<em class="property">class </em><code class="descclassname">delfi.simulator.</code><code class="descname">GaussMixture</code><span class="sig-paren">(</span><em>dim=1, noise_cov=[1.0, 0.1], bimodal=False, return_abs=False, seed=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/simulator/GaussMixture.html#GaussMixture"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.simulator.GaussMixture" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">delfi.simulator.BaseSimulator.BaseSimulator</span></code></p>
+<p>Gaussian Mixture simulator</p>
+<p>Toy model that draws data from a mixture distribution with 2 components
+that have mean theta and fixed noise.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>dim</strong> (<em>int</em>) – Number of dimensions of parameters</li>
+<li><strong>noise_cov</strong> (<em>list</em>) – Covariance of noise on observations</li>
+<li><strong>seed</strong> (<em>int</em><em> or </em><em>None</em>) – If set, randomness is seeded</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="delfi.simulator.GaussMixture.gen">
+<code class="descname">gen</code><span class="sig-paren">(</span><em>params_list</em>, <em>n_reps=1</em>, <em>pbar=None</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.simulator.GaussMixture.gen" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward model for simulator for list of parameters</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>params_list</strong> (<em>list of lists</em><em> or </em><em>1-d np.arrays</em>) – List of parameter vectors, each of which will be simulated</li>
+<li><strong>n_reps</strong> (<em>int</em>) – If greater than 1, generate multiple samples given param</li>
+<li><strong>pbar</strong> (<em>tqdm.tqdm</em><em> or </em><em>None</em>) – If None, will do nothing. Otherwise it will call pbar.update(1)
+after each sample.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>data_list</strong> – Repetitions are runs with the same parameter set, different
+repetitions. Each dictionary must contain a key data that contains
+the results of the forward run. Additional entries can be present.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list of lists containing n_reps dicts with data</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.simulator.GaussMixture.gen_newseed">
+<code class="descname">gen_newseed</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#delfi.simulator.GaussMixture.gen_newseed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a new random seed</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.simulator.GaussMixture.gen_single">
+<code class="descname">gen_single</code><span class="sig-paren">(</span><em>param</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/simulator/GaussMixture.html#GaussMixture.gen_single"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.simulator.GaussMixture.gen_single" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward model for simulator for single parameter set</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>params</strong> (<em>list</em><em> or </em><em>np.array</em><em>, </em><em>1d of length dim_param</em>) – Parameter vector</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>dict</strong> – The dictionary must contain a key data that contains the results of
+the forward run. Additional entries can be present.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">dictionary with data</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.simulator.GaussMixture.reseed">
+<code class="descname">reseed</code><span class="sig-paren">(</span><em>seed</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.simulator.GaussMixture.reseed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reseeds the distribution’s RNG</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="summarystats-summary-statistics">
+<h2><code class="docutils literal notranslate"><span class="pre">summarystats</span></code> – Summary statistics<a class="headerlink" href="#summarystats-summary-statistics" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">delfi.summarystats</span></code> provides summary statistics to be computed on simulator
+outputs.</p>
+<p>The base class specifies the general interface. The following summary stats examples are implemented:</p>
+<div class="section" id="identity">
+<h3>Identity<a class="headerlink" href="#identity" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="delfi.summarystats.Identity">
+<em class="property">class </em><code class="descclassname">delfi.summarystats.</code><code class="descname">Identity</code><span class="sig-paren">(</span><em>seed=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/summarystats/Identity.html#Identity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.summarystats.Identity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">delfi.summarystats.BaseSummaryStats.BaseSummaryStats</span></code></p>
+<p>Just apply the identity instead of reducing data.</p>
+<dl class="method">
+<dt id="delfi.summarystats.Identity.calc">
+<code class="descname">calc</code><span class="sig-paren">(</span><em>repetition_list</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/summarystats/Identity.html#Identity.calc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.summarystats.Identity.calc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method computing summary statistics</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>repetition_list</strong> (<em>list of dictionaries</em><em>, </em><em>one per repetition</em>) – data list, returned by <cite>gen</cite> method of Simulator instance</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">np.arrray, 2d with n_reps x n_summary</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.summarystats.Identity.gen_newseed">
+<code class="descname">gen_newseed</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#delfi.summarystats.Identity.gen_newseed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a new random seed</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="mean">
+<h3>Mean<a class="headerlink" href="#mean" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="delfi.summarystats.Mean">
+<em class="property">class </em><code class="descclassname">delfi.summarystats.</code><code class="descname">Mean</code><span class="sig-paren">(</span><em>seed=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/summarystats/Mean.html#Mean"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.summarystats.Mean" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">delfi.summarystats.BaseSummaryStats.BaseSummaryStats</span></code></p>
+<p>Reduces data to mean</p>
+<dl class="method">
+<dt id="delfi.summarystats.Mean.calc">
+<code class="descname">calc</code><span class="sig-paren">(</span><em>repetition_list</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/summarystats/Mean.html#Mean.calc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.summarystats.Mean.calc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method computing summary statistics</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>repetition_list</strong> (<em>list of dictionaries</em><em>, </em><em>one per repetition</em>) – data list, returned by <cite>gen</cite> method of Simulator instance</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">np.arrray, 2d with n_reps x n_summary</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.summarystats.Mean.gen_newseed">
+<code class="descname">gen_newseed</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#delfi.summarystats.Mean.gen_newseed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a new random seed</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="neuralnet-neural-networks">
+<h2><code class="docutils literal notranslate"><span class="pre">neuralnet</span></code> – Neural networks<a class="headerlink" href="#neuralnet-neural-networks" title="Permalink to this headline">¶</a></h2>
+<p>At the core of density estimation by likelihood-free inference are neural
+networks that are used as flexible density estimations (mixture
+density networks). These are implemented in <code class="docutils literal notranslate"><span class="pre">delfi.neuralnet</span></code>.</p>
+<div class="section" id="neural-network">
+<h3>Neural Network<a class="headerlink" href="#neural-network" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="delfi.neuralnet.NeuralNet.NeuralNet">
+<em class="property">class </em><code class="descclassname">delfi.neuralnet.NeuralNet.</code><code class="descname">NeuralNet</code><span class="sig-paren">(</span><em>n_inputs, n_outputs, n_components=1, n_filters=[], n_hiddens=[10, 10], n_rnn=None, impute_missing=True, seed=None, svi=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/neuralnet/NeuralNet.html#NeuralNet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.neuralnet.NeuralNet.NeuralNet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Initialize a mixture density network with custom layers</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>n_inputs</strong> (<em>int</em><em> or </em><em>tuple of ints</em><em> or </em><em>list of ints</em>) – Dimensionality of input</li>
+<li><strong>n_outputs</strong> (<em>int</em>) – Dimensionality of output</li>
+<li><strong>n_components</strong> (<em>int</em>) – Number of components of the mixture density</li>
+<li><strong>n_filters</strong> (<em>list of ints</em>) – Number of filters  per convolutional layer</li>
+<li><strong>n_hiddens</strong> (<em>list of ints</em>) – Number of hidden units per fully connected layer</li>
+<li><strong>n_rnn</strong> (<em>None</em><em> or </em><em>int</em>) – Number of RNN units</li>
+<li><strong>impute_missing</strong> (<em>bool</em>) – If set to True, learns replacement value for NaNs, otherwise those
+inputs are set to zero</li>
+<li><strong>seed</strong> (<em>int</em><em> or </em><em>None</em>) – If provided, random number generator will be seeded</li>
+<li><strong>svi</strong> (<em>bool</em>) – Whether to use SVI version or not</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="delfi.neuralnet.NeuralNet.NeuralNet.compile_funs">
+<code class="descname">compile_funs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/neuralnet/NeuralNet.html#NeuralNet.compile_funs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.neuralnet.NeuralNet.NeuralNet.compile_funs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compiles theano functions</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.neuralnet.NeuralNet.NeuralNet.eval_comps">
+<code class="descname">eval_comps</code><span class="sig-paren">(</span><em>stats</em>, <em>deterministic=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/neuralnet/NeuralNet.html#NeuralNet.eval_comps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.neuralnet.NeuralNet.NeuralNet.eval_comps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate the parameters of all mixture components at given inputs</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>stats</strong> (<em>np.array</em>) – rows are input locations</li>
+<li><strong>deterministic</strong> (<em>bool</em>) – if True, mean weights are used for Bayesian network</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">mixing coefficients, means and scale matrices</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.neuralnet.NeuralNet.NeuralNet.eval_lprobs">
+<code class="descname">eval_lprobs</code><span class="sig-paren">(</span><em>params</em>, <em>stats</em>, <em>deterministic=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/neuralnet/NeuralNet.html#NeuralNet.eval_lprobs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.neuralnet.NeuralNet.NeuralNet.eval_lprobs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate log probabilities for given input-output pairs.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>params</strong> (<em>np.array</em>) – </li>
+<li><strong>stats</strong> (<em>np.array</em>) – </li>
+<li><strong>deterministic</strong> (<em>bool</em>) – if True, mean weights are used for Bayesian network</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>log probabilities</strong></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">log p(params|stats)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.neuralnet.NeuralNet.NeuralNet.gen_newseed">
+<code class="descname">gen_newseed</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/neuralnet/NeuralNet.html#NeuralNet.gen_newseed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.neuralnet.NeuralNet.NeuralNet.gen_newseed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a new random seed</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.neuralnet.NeuralNet.NeuralNet.get_mog">
+<code class="descname">get_mog</code><span class="sig-paren">(</span><em>stats</em>, <em>deterministic=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/neuralnet/NeuralNet.html#NeuralNet.get_mog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.neuralnet.NeuralNet.NeuralNet.get_mog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the conditional MoG at location x</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>stats</strong> (<em>np.array</em>) – single input location</li>
+<li><strong>deterministic</strong> (<em>bool</em>) – if True, mean weights are used for Bayesian network</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="delfi.neuralnet.NeuralNet.NeuralNet.params_dict">
+<code class="descname">params_dict</code><a class="headerlink" href="#delfi.neuralnet.NeuralNet.NeuralNet.params_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Getter for params as dict</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.neuralnet.NeuralNet.NeuralNet.reseed">
+<code class="descname">reseed</code><span class="sig-paren">(</span><em>seed</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/neuralnet/NeuralNet.html#NeuralNet.reseed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.neuralnet.NeuralNet.NeuralNet.reseed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reseeds the network’s RNG</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="delfi.neuralnet.NeuralNet.NeuralNet.spec_dict">
+<code class="descname">spec_dict</code><a class="headerlink" href="#delfi.neuralnet.NeuralNet.NeuralNet.spec_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specs as dict</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="trainer">
+<h3>Trainer<a class="headerlink" href="#trainer" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="delfi.neuralnet.Trainer.Trainer">
+<em class="property">class </em><code class="descclassname">delfi.neuralnet.Trainer.</code><code class="descname">Trainer</code><span class="sig-paren">(</span><em>network</em>, <em>loss</em>, <em>trn_data</em>, <em>trn_inputs</em>, <em>step=&lt;function adam&gt;</em>, <em>lr=0.001</em>, <em>lr_decay=1.0</em>, <em>max_norm=0.1</em>, <em>monitor=None</em>, <em>seed=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/neuralnet/Trainer.html#Trainer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.neuralnet.Trainer.Trainer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Construct and configure the trainer</p>
+<p>The trainer takes as inputs a neural network, a loss function and
+training data. During init the theano functions for training are
+compiled.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>network</strong> (<em>NeuralNet instance</em>) – The neural network to train</li>
+<li><strong>loss</strong> (<em>theano variable</em>) – Loss function to be computed for network training</li>
+<li><strong>trn_data</strong> (<em>tuple of arrays</em>) – Training data in the form (params, stats)</li>
+<li><strong>trn_inputs</strong> (<em>list of theano variables</em>) – Theano variables that should contain the the training data</li>
+<li><strong>step</strong> (<em>function</em>) – Function to call for updates, will pass gradients and parameters</li>
+<li><strong>lr</strong> (<em>float</em>) – initial learning rate</li>
+<li><strong>lr_decay</strong> (<em>float</em>) – learning rate decay factor, learning rate for each epoch is
+set to lr * (lr_decay**epoch)</li>
+<li><strong>max_norm</strong> (<em>float</em>) – Total norm constraint for gradients</li>
+<li><strong>monitor</strong> (<em>dict</em>) – Dict containing theano variables (and names as keys) that should be
+recorded during training along with the loss function</li>
+<li><strong>seed</strong> (<em>int</em><em> or </em><em>None</em>) – If provided, random number generator for batches will be seeded</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="delfi.neuralnet.Trainer.Trainer.gen_newseed">
+<code class="descname">gen_newseed</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/neuralnet/Trainer.html#Trainer.gen_newseed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.neuralnet.Trainer.Trainer.gen_newseed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a new random seed</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.neuralnet.Trainer.Trainer.train">
+<code class="descname">train</code><span class="sig-paren">(</span><em>epochs=250</em>, <em>minibatch=50</em>, <em>monitor_every=None</em>, <em>stop_on_nan=False</em>, <em>tol=None</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/neuralnet/Trainer.html#Trainer.train"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.neuralnet.Trainer.Trainer.train" title="Permalink to this definition">¶</a></dt>
+<dd><p>Trains the model</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>epochs</strong> (<em>int</em>) – number of epochs (iterations per sample)</li>
+<li><strong>minibatch</strong> (<em>int</em>) – minibatch size</li>
+<li><strong>monitor_every</strong> (<em>int</em>) – monitoring frequency</li>
+<li><strong>stop_on_nan</strong> (<em>bool</em><em> (</em><em>default: False</em><em>)</em>) – if True, will stop if loss becomes NaN</li>
+<li><strong>tol</strong> (<em>float</em>) – tolerance criterion for stopping based on training set</li>
+<li><strong>verbose</strong> (<em>bool</em>) – if True, print progress during training</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>dict</strong></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">containing loss values and possibly additional keys</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="neuralnet-layers-layers">
+<h2><code class="docutils literal notranslate"><span class="pre">neuralnet.layers</span></code> – Layers<a class="headerlink" href="#neuralnet-layers-layers" title="Permalink to this headline">¶</a></h2>
+<p>Custom layers are implemented in <code class="docutils literal notranslate"><span class="pre">delfi.neuralnet.layers</span></code>:</p>
+<div class="section" id="fully-connected">
+<h3>Fully-connected<a class="headerlink" href="#fully-connected" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="delfi.neuralnet.layers.FullyConnectedLayer">
+<em class="property">class </em><code class="descclassname">delfi.neuralnet.layers.</code><code class="descname">FullyConnectedLayer</code><span class="sig-paren">(</span><em>incoming</em>, <em>n_units</em>, <em>svi=True</em>, <em>mW_init=&lt;lasagne.init.HeNormal object&gt;</em>, <em>mb_init=&lt;lasagne.init.Constant object&gt;</em>, <em>sW_init=&lt;lasagne.init.Constant object&gt;</em>, <em>sb_init=&lt;lasagne.init.Constant object&gt;</em>, <em>actfun=&lt;function tanh&gt;</em>, <em>seed=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/neuralnet/layers/FullyConnected.html#FullyConnectedLayer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.neuralnet.layers.FullyConnectedLayer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">lasagne.layers.base.Layer</span></code></p>
+<p>Fully connected layer with optional weight uncertainty</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>incoming</strong> (<em>lasagne.layers.Layer instance</em>) – Incoming layer</li>
+<li><strong>n_units</strong> (<em>int</em>) – Number of units</li>
+<li><strong>svi</strong> (<em>bool</em>) – Weight uncertainty</li>
+<li><strong>mW_init</strong> (<em>function</em>) – Function to initialise weights for mean of weight (multiplicative)</li>
+<li><strong>mb_init</strong> (<em>function</em>) – Function to initialise weights for mean of weight (bias)</li>
+<li><strong>sW_init</strong> (<em>function</em>) – Function to initialise weights for log std of weight (multiplicative)</li>
+<li><strong>sb_init</strong> (<em>function</em>) – Function to initialise weights for log std of weight (bias)</li>
+<li><strong>actfun</strong> (<em>function</em>) – Activation function</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="delfi.neuralnet.layers.FullyConnectedLayer.get_output_for">
+<code class="descname">get_output_for</code><span class="sig-paren">(</span><em>input</em>, <em>deterministic=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/neuralnet/layers/FullyConnected.html#FullyConnectedLayer.get_output_for"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.neuralnet.layers.FullyConnectedLayer.get_output_for" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns matrix with shape (batch, n_units)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.neuralnet.layers.FullyConnectedLayer.get_output_shape_for">
+<code class="descname">get_output_shape_for</code><span class="sig-paren">(</span><em>input_shape</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/neuralnet/layers/FullyConnected.html#FullyConnectedLayer.get_output_shape_for"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.neuralnet.layers.FullyConnectedLayer.get_output_shape_for" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the output shape of this layer, given an input shape.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>input_shape</strong> (<em>tuple</em>) – A tuple representing the shape of the input. The tuple should have
+as many elements as there are input dimensions, and the elements
+should be integers or <cite>None</cite>.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A tuple representing the shape of the output of this layer. The
+tuple has as many elements as there are output dimensions, and the
+elements are all either integers or <cite>None</cite>.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">tuple</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>This method will typically be overridden when implementing a new
+<code class="xref py py-class docutils literal notranslate"><span class="pre">Layer</span></code> class. By default it simply returns the input
+shape. This means that a layer that does not modify the shape
+(e.g. because it applies an elementwise operation) does not need
+to override this method.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="mixture-weights">
+<h3>Mixture weights<a class="headerlink" href="#mixture-weights" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="delfi.neuralnet.layers.MixtureWeightsLayer">
+<em class="property">class </em><code class="descclassname">delfi.neuralnet.layers.</code><code class="descname">MixtureWeightsLayer</code><span class="sig-paren">(</span><em>incoming</em>, <em>n_units</em>, <em>svi=True</em>, <em>mW_init=&lt;lasagne.init.HeNormal object&gt;</em>, <em>mb_init=&lt;lasagne.init.Constant object&gt;</em>, <em>sW_init=&lt;lasagne.init.Constant object&gt;</em>, <em>sb_init=&lt;lasagne.init.Constant object&gt;</em>, <em>actfun=&lt;function softmax&gt;</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/neuralnet/layers/MixtureWeights.html#MixtureWeightsLayer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.neuralnet.layers.MixtureWeightsLayer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">delfi.neuralnet.layers.FullyConnected.FullyConnectedLayer</span></code></p>
+<p>Mixture weights layer with optional weight uncertainty</p>
+<p>If n_units &gt; 1, this becomes a fully-connected layer. Else, no
+parameters are added, and the output defaults to weight 1.</p>
+<p>See <code class="docutils literal notranslate"><span class="pre">delfi.neuralnet.layers.FullyConnected</span></code> for docstring</p>
+<dl class="method">
+<dt id="delfi.neuralnet.layers.MixtureWeightsLayer.get_output_for">
+<code class="descname">get_output_for</code><span class="sig-paren">(</span><em>input</em>, <em>deterministic=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/neuralnet/layers/MixtureWeights.html#MixtureWeightsLayer.get_output_for"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.neuralnet.layers.MixtureWeightsLayer.get_output_for" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns matrix with shape (batch, n_units)</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="mixture-means">
+<h3>Mixture means<a class="headerlink" href="#mixture-means" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="delfi.neuralnet.layers.MixtureMeansLayer">
+<em class="property">class </em><code class="descclassname">delfi.neuralnet.layers.</code><code class="descname">MixtureMeansLayer</code><span class="sig-paren">(</span><em>incoming</em>, <em>n_components</em>, <em>n_dim</em>, <em>svi=True</em>, <em>mWs_init=&lt;lasagne.init.HeNormal object&gt;</em>, <em>mbs_init=&lt;lasagne.init.Normal object&gt;</em>, <em>sWs_init=&lt;lasagne.init.Constant object&gt;</em>, <em>sbs_init=&lt;lasagne.init.Constant object&gt;</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/neuralnet/layers/MixtureMeans.html#MixtureMeansLayer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.neuralnet.layers.MixtureMeansLayer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">lasagne.layers.base.Layer</span></code></p>
+<p>Fully connected layer for mixture means, optional weight uncertainty</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>incoming</strong> (<em>lasagne.layers.Layer instance</em>) – Incoming layer</li>
+<li><strong>n_components</strong> (<em>int</em>) – Number of components</li>
+<li><strong>n_dim</strong> (<em>int</em>) – Dimensionality of output vector</li>
+<li><strong>svi</strong> (<em>bool</em>) – Weight uncertainty</li>
+<li><strong>mWs_init</strong> (<em>function</em>) – Function to initialise weights for mean of weight (multiplicative);
+applied per component</li>
+<li><strong>mbs_init</strong> (<em>function</em>) – Function to initialise weights for mean of weight (bias);
+applied per component</li>
+<li><strong>sWs_init</strong> (<em>function</em>) – Function to initialise weights for log std of weight (multiplicative);
+applied per component</li>
+<li><strong>sbs_init</strong> (<em>function</em>) – Function to initialise weights for log std of weight (bias);
+applied per component</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="delfi.neuralnet.layers.MixtureMeansLayer.get_output_for">
+<code class="descname">get_output_for</code><span class="sig-paren">(</span><em>input</em>, <em>deterministic=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/neuralnet/layers/MixtureMeans.html#MixtureMeansLayer.get_output_for"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.neuralnet.layers.MixtureMeansLayer.get_output_for" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute outputs</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list of length n_components with (batch, n_dim)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.neuralnet.layers.MixtureMeansLayer.get_output_shape_for">
+<code class="descname">get_output_shape_for</code><span class="sig-paren">(</span><em>input_shape</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/neuralnet/layers/MixtureMeans.html#MixtureMeansLayer.get_output_shape_for"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.neuralnet.layers.MixtureMeansLayer.get_output_shape_for" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the output shape of this layer, given an input shape.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>input_shape</strong> (<em>tuple</em>) – A tuple representing the shape of the input. The tuple should have
+as many elements as there are input dimensions, and the elements
+should be integers or <cite>None</cite>.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A tuple representing the shape of the output of this layer. The
+tuple has as many elements as there are output dimensions, and the
+elements are all either integers or <cite>None</cite>.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">tuple</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>This method will typically be overridden when implementing a new
+<code class="xref py py-class docutils literal notranslate"><span class="pre">Layer</span></code> class. By default it simply returns the input
+shape. This means that a layer that does not modify the shape
+(e.g. because it applies an elementwise operation) does not need
+to override this method.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="mixture-precisions">
+<h3>Mixture precisions<a class="headerlink" href="#mixture-precisions" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="delfi.neuralnet.layers.MixturePrecisionsLayer">
+<em class="property">class </em><code class="descclassname">delfi.neuralnet.layers.</code><code class="descname">MixturePrecisionsLayer</code><span class="sig-paren">(</span><em>incoming</em>, <em>n_components</em>, <em>n_dim</em>, <em>svi=True</em>, <em>rank=None</em>, <em>homoscedastic=False</em>, <em>mWs_init=&lt;lasagne.init.HeNormal object&gt;</em>, <em>mbs_init=&lt;lasagne.init.Constant object&gt;</em>, <em>sWs_init=&lt;lasagne.init.Constant object&gt;</em>, <em>sbs_init=&lt;lasagne.init.Constant object&gt;</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/neuralnet/layers/MixturePrecisions.html#MixturePrecisionsLayer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.neuralnet.layers.MixturePrecisionsLayer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">lasagne.layers.base.Layer</span></code></p>
+<p>Fully connected layer for mixture precisions, optional weight uncertainty</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>incoming</strong> (<em>lasagne.layers.Layer instance</em>) – Incoming layer</li>
+<li><strong>n_components</strong> (<em>int</em>) – Number of components</li>
+<li><strong>n_dim</strong> (<em>int</em>) – Dimensionality of output vector</li>
+<li><strong>svi</strong> (<em>bool</em>) – Weight uncertainty</li>
+<li><strong>mWs_init</strong> (<em>function</em>) – Function to initialise weights for mean of weight (multiplicative);
+applied per component</li>
+<li><strong>mbs_init</strong> (<em>function</em>) – Function to initialise weights for mean of weight (bias);
+applied per component</li>
+<li><strong>sWs_init</strong> (<em>function</em>) – Function to initialise weights for log std of weight (multiplicative);
+applied per component</li>
+<li><strong>sbs_init</strong> (<em>function</em>) – Function to initialise weights for log std of weight (bias);
+applied per component</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="delfi.neuralnet.layers.MixturePrecisionsLayer.get_output_for">
+<code class="descname">get_output_for</code><span class="sig-paren">(</span><em>input</em>, <em>deterministic=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/neuralnet/layers/MixturePrecisions.html#MixturePrecisionsLayer.get_output_for"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.neuralnet.layers.MixturePrecisionsLayer.get_output_for" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute outputs</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="docutils">
+<dt>Us <span class="classifier-delimiter">:</span> <span class="classifier">list of length n_components with (batch, n_dim, n_dim)</span></dt>
+<dd>Precision factors</dd>
+<dt>ldetUs <span class="classifier-delimiter">:</span> <span class="classifier">list of length n_components with (batch, n_dim, n_dim)</span></dt>
+<dd>Log determinants of precisions</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list by concatenation of</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="delfi.neuralnet.layers.MixturePrecisionsLayer.get_output_shape_for">
+<code class="descname">get_output_shape_for</code><span class="sig-paren">(</span><em>input_shape</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/neuralnet/layers/MixturePrecisions.html#MixturePrecisionsLayer.get_output_shape_for"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.neuralnet.layers.MixturePrecisionsLayer.get_output_shape_for" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the output shape of this layer, given an input shape.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>input_shape</strong> (<em>tuple</em>) – A tuple representing the shape of the input. The tuple should have
+as many elements as there are input dimensions, and the elements
+should be integers or <cite>None</cite>.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A tuple representing the shape of the output of this layer. The
+tuple has as many elements as there are output dimensions, and the
+elements are all either integers or <cite>None</cite>.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">tuple</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>This method will typically be overridden when implementing a new
+<code class="xref py py-class docutils literal notranslate"><span class="pre">Layer</span></code> class. By default it simply returns the input
+shape. This means that a layer that does not modify the shape
+(e.g. because it applies an elementwise operation) does not need
+to override this method.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="kernel-kernel-functions">
+<h2><code class="docutils literal notranslate"><span class="pre">kernel</span></code> – Kernel functions<a class="headerlink" href="#kernel-kernel-functions" title="Permalink to this headline">¶</a></h2>
+<p>Inference algorithms may utilize kernels as part of the loss function.</p>
+<div class="section" id="epanechnikov">
+<h3>Epanechnikov<a class="headerlink" href="#epanechnikov" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="delfi.kernel.Epanechnikov">
+<em class="property">class </em><code class="descclassname">delfi.kernel.</code><code class="descname">Epanechnikov</code><span class="sig-paren">(</span><em>obs</em>, <em>bandwidth=1.0</em>, <em>spherical=True</em>, <em>atleast=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/kernel/Epanechnikov.html#Epanechnikov"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.kernel.Epanechnikov" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">delfi.kernel.BaseKernel.BaseKernel</span></code></p>
+<p>Abstract base class for kernels</p>
+<p>Distributions must at least implement abstract methods of this class.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>obs</strong> (<em>1 x dim</em>) – center of kernel</li>
+<li><strong>bandwidth</strong> (<em>float</em>) – bandwidth of kernel (isotropic)</li>
+<li><strong>spherical</strong> (<em>bool</em>) – construct spherical or multiplicative kernel [1]</li>
+<li><strong>atleast</strong> (<em>float</em><em> [</em><em>0</em><em>,</em><em>1</em><em>]</em>) – if specified, kernel will default to a uniform kernel
+iff the fraction of weights is below the limit specified by atleast</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>See [2] for descriptions of common kernel functions.</p>
+<p>[1]: <a class="reference external" href="http://www.buch-kromann.dk/tine/nonpar/Nonparametric_Density_Estimation_multidim.pdf">http://www.buch-kromann.dk/tine/nonpar/Nonparametric_Density_Estimation_multidim.pdf</a>
+[2]: <a class="reference external" href="https://en.wikipedia.org/wiki/Kernel_(statistics">https://en.wikipedia.org/wiki/Kernel_(statistics</a>)#Kernel_functions_in_common_use</p>
+<dl class="method">
+<dt id="delfi.kernel.Epanechnikov.eval">
+<code class="descname">eval</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.kernel.Epanechnikov.eval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Kernel for loss calibration</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>x</strong> (<em>N x dim</em>) – points at which to evaluate kernel</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>weights</strong> – normalized to be 1. for x = obs</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">N</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="id1">
+<h3>Gauss<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="delfi.kernel.Gauss">
+<em class="property">class </em><code class="descclassname">delfi.kernel.</code><code class="descname">Gauss</code><span class="sig-paren">(</span><em>obs</em>, <em>bandwidth=1.0</em>, <em>spherical=True</em>, <em>atleast=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/kernel/Gauss.html#Gauss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.kernel.Gauss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">delfi.kernel.BaseKernel.BaseKernel</span></code></p>
+<p>Abstract base class for kernels</p>
+<p>Distributions must at least implement abstract methods of this class.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>obs</strong> (<em>1 x dim</em>) – center of kernel</li>
+<li><strong>bandwidth</strong> (<em>float</em>) – bandwidth of kernel (isotropic)</li>
+<li><strong>spherical</strong> (<em>bool</em>) – construct spherical or multiplicative kernel [1]</li>
+<li><strong>atleast</strong> (<em>float</em><em> [</em><em>0</em><em>,</em><em>1</em><em>]</em>) – if specified, kernel will default to a uniform kernel
+iff the fraction of weights is below the limit specified by atleast</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>See [2] for descriptions of common kernel functions.</p>
+<p>[1]: <a class="reference external" href="http://www.buch-kromann.dk/tine/nonpar/Nonparametric_Density_Estimation_multidim.pdf">http://www.buch-kromann.dk/tine/nonpar/Nonparametric_Density_Estimation_multidim.pdf</a>
+[2]: <a class="reference external" href="https://en.wikipedia.org/wiki/Kernel_(statistics">https://en.wikipedia.org/wiki/Kernel_(statistics</a>)#Kernel_functions_in_common_use</p>
+<dl class="method">
+<dt id="delfi.kernel.Gauss.eval">
+<code class="descname">eval</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.kernel.Gauss.eval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Kernel for loss calibration</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>x</strong> (<em>N x dim</em>) – points at which to evaluate kernel</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>weights</strong> – normalized to be 1. for x = obs</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">N</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="tricube">
+<h3>Tricube<a class="headerlink" href="#tricube" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="delfi.kernel.Tricube">
+<em class="property">class </em><code class="descclassname">delfi.kernel.</code><code class="descname">Tricube</code><span class="sig-paren">(</span><em>obs</em>, <em>bandwidth=1.0</em>, <em>spherical=True</em>, <em>atleast=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/kernel/Tricube.html#Tricube"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.kernel.Tricube" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">delfi.kernel.BaseKernel.BaseKernel</span></code></p>
+<p>Abstract base class for kernels</p>
+<p>Distributions must at least implement abstract methods of this class.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>obs</strong> (<em>1 x dim</em>) – center of kernel</li>
+<li><strong>bandwidth</strong> (<em>float</em>) – bandwidth of kernel (isotropic)</li>
+<li><strong>spherical</strong> (<em>bool</em>) – construct spherical or multiplicative kernel [1]</li>
+<li><strong>atleast</strong> (<em>float</em><em> [</em><em>0</em><em>,</em><em>1</em><em>]</em>) – if specified, kernel will default to a uniform kernel
+iff the fraction of weights is below the limit specified by atleast</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>See [2] for descriptions of common kernel functions.</p>
+<p>[1]: <a class="reference external" href="http://www.buch-kromann.dk/tine/nonpar/Nonparametric_Density_Estimation_multidim.pdf">http://www.buch-kromann.dk/tine/nonpar/Nonparametric_Density_Estimation_multidim.pdf</a>
+[2]: <a class="reference external" href="https://en.wikipedia.org/wiki/Kernel_(statistics">https://en.wikipedia.org/wiki/Kernel_(statistics</a>)#Kernel_functions_in_common_use</p>
+<dl class="method">
+<dt id="delfi.kernel.Tricube.eval">
+<code class="descname">eval</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.kernel.Tricube.eval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Kernel for loss calibration</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>x</strong> (<em>N x dim</em>) – points at which to evaluate kernel</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>weights</strong> – normalized to be 1. for x = obs</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">N</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="id2">
+<h3>Uniform<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="delfi.kernel.Uniform">
+<em class="property">class </em><code class="descclassname">delfi.kernel.</code><code class="descname">Uniform</code><span class="sig-paren">(</span><em>obs</em>, <em>bandwidth=1.0</em>, <em>spherical=True</em>, <em>atleast=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/kernel/Uniform.html#Uniform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.kernel.Uniform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">delfi.kernel.BaseKernel.BaseKernel</span></code></p>
+<p>Abstract base class for kernels</p>
+<p>Distributions must at least implement abstract methods of this class.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>obs</strong> (<em>1 x dim</em>) – center of kernel</li>
+<li><strong>bandwidth</strong> (<em>float</em>) – bandwidth of kernel (isotropic)</li>
+<li><strong>spherical</strong> (<em>bool</em>) – construct spherical or multiplicative kernel [1]</li>
+<li><strong>atleast</strong> (<em>float</em><em> [</em><em>0</em><em>,</em><em>1</em><em>]</em>) – if specified, kernel will default to a uniform kernel
+iff the fraction of weights is below the limit specified by atleast</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>See [2] for descriptions of common kernel functions.</p>
+<p>[1]: <a class="reference external" href="http://www.buch-kromann.dk/tine/nonpar/Nonparametric_Density_Estimation_multidim.pdf">http://www.buch-kromann.dk/tine/nonpar/Nonparametric_Density_Estimation_multidim.pdf</a>
+[2]: <a class="reference external" href="https://en.wikipedia.org/wiki/Kernel_(statistics">https://en.wikipedia.org/wiki/Kernel_(statistics</a>)#Kernel_functions_in_common_use</p>
+<dl class="method">
+<dt id="delfi.kernel.Uniform.eval">
+<code class="descname">eval</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="headerlink" href="#delfi.kernel.Uniform.eval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Kernel for loss calibration</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>x</strong> (<em>N x dim</em>) – points at which to evaluate kernel</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>weights</strong> – normalized to be 1. for x = obs</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">N</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="utils-utility-functions">
+<h2><code class="docutils literal notranslate"><span class="pre">utils</span></code> – Utility functions<a class="headerlink" href="#utils-utility-functions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="delfi.utils.viz.plot_pdf">
+<code class="descclassname">delfi.utils.viz.</code><code class="descname">plot_pdf</code><span class="sig-paren">(</span><em>pdf1</em>, <em>lims=None</em>, <em>pdf2=None</em>, <em>gt=None</em>, <em>contours=False</em>, <em>levels=(0.68</em>, <em>0.95)</em>, <em>resolution=500</em>, <em>labels_params=None</em>, <em>ticks=False</em>, <em>diag_only=False</em>, <em>diag_only_cols=4</em>, <em>diag_only_rows=4</em>, <em>figsize=(5</em>, <em>5)</em>, <em>fontscale=1</em>, <em>partial=False</em>, <em>samples=None</em>, <em>col1='k'</em>, <em>col2='b'</em>, <em>col3='g'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/delfi/utils/viz.html#plot_pdf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#delfi.utils.viz.plot_pdf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots marginals of a pdf, for each variable and pair of variables.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>pdf1</strong> (<em>object</em>) – </li>
+<li><strong>lims</strong> (<em>array</em>) – </li>
+<li><strong>pdf2</strong> (<em>object</em><em> (or </em><em>None</em><em>)</em>) – If not none, visualizes pairwise marginals for second pdf on lower diagonal</li>
+<li><strong>contours</strong> (<em>bool</em>) – </li>
+<li><strong>levels</strong> (<em>tuple</em>) – For contours</li>
+<li><strong>resolution</strong> – </li>
+<li><strong>labels_params</strong> (<em>array of strings</em>) – </li>
+<li><strong>ticks</strong> (<em>bool</em>) – If True, includes ticks in plots</li>
+<li><strong>diag_only</strong> (<em>bool</em>) – </li>
+<li><strong>diag_only_cols</strong> (<em>int</em>) – Number of grid columns if only the diagonal is plotted</li>
+<li><strong>diag_only_rows</strong> (<em>int</em>) – Number of grid rows if only the diagonal is plotted</li>
+<li><strong>fontscale</strong> (<em>int</em>) – </li>
+<li><strong>partial</strong> (<em>bool</em>) – If True, plots partial posterior with at the most 3 parameters.
+Only available if <cite>diag_only</cite> is False</li>
+<li><strong>samples</strong> (<em>array</em>) – If given, samples of a distribution are plotted along <cite>pdf</cite>.
+If given, <cite>pdf</cite> is plotted with default <cite>levels</cite> (0.68, 0.95), if provided <cite>levels</cite> is None.
+If given, <cite>lims</cite> is overwritten and taken to be the respective
+limits of the samples in each dimension.</li>
+<li><strong>col1</strong> (<em>str</em>) – color 1</li>
+<li><strong>col2</strong> (<em>str</em>) – color 2</li>
+<li><strong>col3</strong> (<em>str</em>) – color 3 (for pdf2 if provided)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="credits.html" class="btn btn-neutral float-right" title="Credits" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="notebooks/quickstart.html" class="btn btn-neutral" title="Getting started" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Mackelab
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript">
+          var DOCUMENTATION_OPTIONS = {
+              URL_ROOT:'./',
+              VERSION:'0.5.1',
+              LANGUAGE:'None',
+              COLLAPSE_INDEX:false,
+              FILE_SUFFIX:'.html',
+              HAS_SOURCE:  true,
+              SOURCELINK_SUFFIX: '.txt'
+          };
+      </script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

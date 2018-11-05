@@ -1,0 +1,438 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>delfi.neuralnet.Trainer &mdash; delfi 0.5.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> delfi
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.5.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/quickstart.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/mackelab/delfi">Github repo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../credits.html">Credits</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">delfi</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>delfi.neuralnet.Trainer</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for delfi.neuralnet.Trainer</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">lasagne.updates</span> <span class="k">as</span> <span class="nn">lu</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">theano</span>
+<span class="kn">import</span> <span class="nn">theano.tensor</span> <span class="k">as</span> <span class="nn">tt</span>
+
+<span class="kn">from</span> <span class="nn">delfi.utils.progress</span> <span class="k">import</span> <span class="n">no_tqdm</span><span class="p">,</span> <span class="n">progressbar</span>
+
+<span class="n">dtype</span> <span class="o">=</span> <span class="n">theano</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">floatX</span>
+
+
+<div class="viewcode-block" id="Trainer"><a class="viewcode-back" href="../../../api.html#delfi.neuralnet.Trainer.Trainer">[docs]</a><span class="k">class</span> <span class="nc">Trainer</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">network</span><span class="p">,</span> <span class="n">loss</span><span class="p">,</span> <span class="n">trn_data</span><span class="p">,</span> <span class="n">trn_inputs</span><span class="p">,</span>
+                 <span class="n">step</span><span class="o">=</span><span class="n">lu</span><span class="o">.</span><span class="n">adam</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">lr_decay</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">max_norm</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+                 <span class="n">monitor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Construct and configure the trainer</span>
+
+<span class="sd">        The trainer takes as inputs a neural network, a loss function and</span>
+<span class="sd">        training data. During init the theano functions for training are</span>
+<span class="sd">        compiled.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        network : NeuralNet instance</span>
+<span class="sd">            The neural network to train</span>
+<span class="sd">        loss : theano variable</span>
+<span class="sd">            Loss function to be computed for network training</span>
+<span class="sd">        trn_data : tuple of arrays</span>
+<span class="sd">            Training data in the form (params, stats)</span>
+<span class="sd">        trn_inputs : list of theano variables</span>
+<span class="sd">            Theano variables that should contain the the training data</span>
+<span class="sd">        step : function</span>
+<span class="sd">            Function to call for updates, will pass gradients and parameters</span>
+<span class="sd">        lr : float</span>
+<span class="sd">            initial learning rate</span>
+<span class="sd">        lr_decay : float</span>
+<span class="sd">            learning rate decay factor, learning rate for each epoch is</span>
+<span class="sd">            set to lr * (lr_decay**epoch)</span>
+<span class="sd">        max_norm : float</span>
+<span class="sd">            Total norm constraint for gradients</span>
+<span class="sd">        monitor : dict</span>
+<span class="sd">            Dict containing theano variables (and names as keys) that should be</span>
+<span class="sd">            recorded during training along with the loss function</span>
+<span class="sd">        seed : int or None</span>
+<span class="sd">            If provided, random number generator for batches will be seeded</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">network</span> <span class="o">=</span> <span class="n">network</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loss</span> <span class="o">=</span> <span class="n">loss</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trn_data</span> <span class="o">=</span> <span class="n">trn_data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trn_inputs</span> <span class="o">=</span> <span class="n">trn_inputs</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">seed</span> <span class="o">=</span> <span class="n">seed</span>
+        <span class="k">if</span> <span class="n">seed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">RandomState</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">RandomState</span><span class="p">()</span>
+
+        <span class="c1"># gradients</span>
+        <span class="n">grads</span> <span class="o">=</span> <span class="n">tt</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">aps</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">max_norm</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">grads</span> <span class="o">=</span> <span class="n">lu</span><span class="o">.</span><span class="n">total_norm_constraint</span><span class="p">(</span><span class="n">grads</span><span class="p">,</span> <span class="n">max_norm</span><span class="o">=</span><span class="n">max_norm</span><span class="p">)</span>
+
+        <span class="c1"># updates</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lr</span> <span class="o">=</span> <span class="n">lr</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lr_decay</span> <span class="o">=</span> <span class="n">lr_decay</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lr_op</span> <span class="o">=</span> <span class="n">theano</span><span class="o">.</span><span class="n">shared</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lr</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">updates</span> <span class="o">=</span> <span class="n">step</span><span class="p">(</span><span class="n">grads</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">aps</span><span class="p">,</span> <span class="n">learning_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lr_op</span><span class="p">)</span>
+
+        <span class="c1"># check trn_data</span>
+        <span class="n">n_trn_data_list</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">trn_data</span><span class="p">])</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">n_trn_data_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;trn_data elements got different len&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_trn_data</span> <span class="o">=</span> <span class="n">trn_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># outputs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trn_outputs_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;loss&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trn_outputs_nodes</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">monitor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">monitor</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">monitor_names</span><span class="p">,</span> <span class="n">monitor_nodes</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">monitor</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trn_outputs_names</span> <span class="o">+=</span> <span class="n">monitor_names</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trn_outputs_nodes</span> <span class="o">+=</span> <span class="n">monitor_nodes</span>
+
+        <span class="c1"># function for single update</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">make_update</span> <span class="o">=</span> <span class="n">theano</span><span class="o">.</span><span class="n">function</span><span class="p">(</span>
+            <span class="n">inputs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">trn_inputs</span><span class="p">,</span>
+            <span class="n">outputs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">trn_outputs_nodes</span><span class="p">,</span>
+            <span class="n">updates</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">updates</span>
+        <span class="p">)</span>
+
+        <span class="c1"># initialize variables</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loss</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Trainer.train"><a class="viewcode-back" href="../../../api.html#delfi.neuralnet.Trainer.Trainer.train">[docs]</a>    <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+              <span class="n">epochs</span><span class="o">=</span><span class="mi">250</span><span class="p">,</span>
+              <span class="n">minibatch</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+              <span class="n">monitor_every</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+              <span class="n">stop_on_nan</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+              <span class="n">tol</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+              <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Trains the model</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        epochs : int</span>
+<span class="sd">            number of epochs (iterations per sample)</span>
+<span class="sd">        minibatch : int</span>
+<span class="sd">            minibatch size</span>
+<span class="sd">        monitor_every : int</span>
+<span class="sd">            monitoring frequency</span>
+<span class="sd">        stop_on_nan : bool (default: False)</span>
+<span class="sd">            if True, will stop if loss becomes NaN</span>
+<span class="sd">        tol : float</span>
+<span class="sd">            tolerance criterion for stopping based on training set</span>
+<span class="sd">        verbose : bool</span>
+<span class="sd">            if True, print progress during training</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict : containing loss values and possibly additional keys</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># initialize variables</span>
+        <span class="nb">iter</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># minibatch size</span>
+        <span class="n">minibatch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_trn_data</span> <span class="k">if</span> <span class="n">minibatch</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">minibatch</span>
+        <span class="k">if</span> <span class="n">minibatch</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_trn_data</span><span class="p">:</span>
+            <span class="n">minibatch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_trn_data</span>
+
+        <span class="n">maxiter</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_trn_data</span> <span class="o">/</span> <span class="n">minibatch</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="n">epochs</span> 
+            
+        <span class="c1"># placeholders for outputs</span>
+        <span class="n">trn_outputs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">trn_outputs_names</span><span class="p">:</span>
+            <span class="n">trn_outputs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># cast trn_data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trn_data</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">trn_data</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="n">pbar</span> <span class="o">=</span> <span class="n">no_tqdm</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pbar</span> <span class="o">=</span> <span class="n">progressbar</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="n">maxiter</span> <span class="o">*</span> <span class="n">minibatch</span><span class="p">)</span>
+            <span class="n">desc</span> <span class="o">=</span> <span class="s1">&#39;Training &#39;</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">verbose</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>
+                <span class="n">desc</span> <span class="o">+=</span> <span class="n">verbose</span>
+            <span class="n">pbar</span><span class="o">.</span><span class="n">set_description</span><span class="p">(</span><span class="n">desc</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">pbar</span><span class="p">:</span>
+            <span class="c1"># loop over epochs</span>
+            <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">epochs</span><span class="p">):</span>
+                <span class="c1"># set learning rate</span>
+                <span class="n">lr_epoch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lr</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lr_decay</span><span class="o">**</span><span class="n">epoch</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">lr_op</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">lr_epoch</span><span class="p">)</span>
+
+                <span class="c1"># loop over batches</span>
+                <span class="k">for</span> <span class="n">trn_batch</span> <span class="ow">in</span> <span class="n">iterate_minibatches</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trn_data</span><span class="p">,</span> <span class="n">minibatch</span><span class="p">,</span>
+                                                     <span class="n">seed</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gen_newseed</span><span class="p">()):</span>
+                    <span class="n">trn_batch</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">trn_batch</span><span class="p">)</span>
+
+                    <span class="n">outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_update</span><span class="p">(</span><span class="o">*</span><span class="n">trn_batch</span><span class="p">)</span>
+
+                    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trn_outputs_names</span><span class="p">,</span> <span class="n">outputs</span><span class="p">):</span>
+                        <span class="n">trn_outputs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+                    <span class="n">trn_loss</span> <span class="o">=</span> <span class="n">trn_outputs</span><span class="p">[</span><span class="s1">&#39;loss&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">diff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss</span> <span class="o">-</span> <span class="n">trn_loss</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">loss</span> <span class="o">=</span> <span class="n">trn_loss</span>
+
+                    <span class="c1"># check for convergence</span>
+                    <span class="k">if</span> <span class="n">tol</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">diff</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">tol</span><span class="p">:</span>
+                            <span class="k">break</span>
+
+                    <span class="c1"># check for nan</span>
+                    <span class="k">if</span> <span class="n">stop_on_nan</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">trn_loss</span><span class="p">):</span>
+                        <span class="k">break</span>
+
+                    <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">minibatch</span><span class="p">)</span>
+
+        <span class="c1"># convert lists to arrays</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">trn_outputs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">trn_outputs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">trn_outputs</span></div>
+
+<div class="viewcode-block" id="Trainer.gen_newseed"><a class="viewcode-back" href="../../../api.html#delfi.neuralnet.Trainer.Trainer.gen_newseed">[docs]</a>    <span class="k">def</span> <span class="nf">gen_newseed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generates a new random seed&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">seed</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rng</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="o">**</span><span class="mi">31</span><span class="p">)</span></div></div>
+
+
+<span class="k">def</span> <span class="nf">iterate_minibatches</span><span class="p">(</span><span class="n">trn_data</span><span class="p">,</span> <span class="n">minibatch</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Minibatch iterator</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    trn_data : tuple of arrays</span>
+<span class="sd">        Training daa</span>
+<span class="sd">    minibatch : int</span>
+<span class="sd">        Size of batches</span>
+<span class="sd">    seed : None or int</span>
+<span class="sd">        Seed for minibatch order</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    trn_batch : tuple of arrays</span>
+<span class="sd">        Batch of training data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n_samples</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">trn_data</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
+
+    <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">RandomState</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
+    <span class="n">rng</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span>
+
+    <span class="n">start_idx</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">for</span> <span class="n">start_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_samples</span><span class="o">-</span><span class="n">minibatch</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">minibatch</span><span class="p">):</span>
+        <span class="n">excerpt</span> <span class="o">=</span> <span class="n">indices</span><span class="p">[</span><span class="n">start_idx</span><span class="p">:</span><span class="n">start_idx</span> <span class="o">+</span> <span class="n">minibatch</span><span class="p">]</span>
+
+        <span class="k">yield</span> <span class="p">(</span><span class="n">trn_data</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">excerpt</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">trn_data</span><span class="p">)))</span>
+
+    <span class="n">rem_i</span> <span class="o">=</span> <span class="n">n_samples</span> <span class="o">-</span> <span class="p">(</span><span class="n">n_samples</span> <span class="o">%</span> <span class="n">minibatch</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">rem_i</span> <span class="o">!=</span> <span class="n">n_samples</span><span class="p">:</span>
+        <span class="n">excerpt</span> <span class="o">=</span> <span class="n">indices</span><span class="p">[</span><span class="n">rem_i</span><span class="p">:]</span>
+        <span class="k">yield</span> <span class="p">(</span><span class="n">trn_data</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">excerpt</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">trn_data</span><span class="p">)))</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Mackelab
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript">
+          var DOCUMENTATION_OPTIONS = {
+              URL_ROOT:'../../../',
+              VERSION:'0.5.1',
+              LANGUAGE:'None',
+              COLLAPSE_INDEX:false,
+              FILE_SUFFIX:'.html',
+              HAS_SOURCE:  true,
+              SOURCELINK_SUFFIX: '.txt'
+          };
+      </script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
