@@ -133,6 +133,18 @@ class SNPE(BaseInference):
             If True, will halt if NaNs in the loss are encountered
         proposal : Distribution of None
             If given, will use this distribution as the starting proposal prior
+        text_verbose: bool
+            if True, simple print output for the progress
+        load_trn_data:bool
+            If True, load tds from specified folder
+        save_trn_data: bool
+            If True, save tds to specified folder
+        append_trn_data: bool
+            if True draws n_train new trainingsdata and appends it to the loaded tds
+        init_trn_data_folder: None or folderpath
+            if filepath loads/saves the trainingsdata to this folder
+
+
         kwargs : additional keyword arguments
             Additional arguments for the Trainer instance
 
