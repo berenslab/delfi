@@ -161,6 +161,8 @@ class SNPE(BaseInference):
         trn_datasets = []
         posteriors = []
 
+        if load_trn_data or save_trn_data:
+            assert init_trn_data_folder is not None, 'If you want to load or save data, please state a folder'
         for r in range(n_rounds):
             self.round += 1
             if text_verbose: print('Round: ' + str(r))
@@ -186,14 +188,13 @@ class SNPE(BaseInference):
 
                 self.generator.proposal = proposal
 
-            if r == 0 and (init_trn_data_folder is not None) and load_trn_data:
-                with open(init_trn_data_folder + '/initial_trn_data.pkl', 'rb') as f:
+            # Loading trainind from previous trainings. Only samples from the prior distribution are loaded.
+            if r == 0 and load_trn_data:
+		with open(init_trn_data_folder + '/initial_trn_data.pkl', 'rb') as f:
                     initial_trn_data = pickle.load(f)
                 assert initial_trn_data[0].shape[0] == initial_trn_data[1].shape[0], 'Number of samples must be the same'
                 assert initial_trn_data[0].shape[0] == initial_trn_data[2].size, 'Number of samples must be the same'
 
-            # number of training examples for this round
-            if r == 0 and load_trn_data:
                 n_train_round = initial_trn_data[0].shape[0]
                 trn_data = initial_trn_data
                 if text_verbose: print('Used initial training data.')
@@ -201,7 +202,7 @@ class SNPE(BaseInference):
                     old_trn_data = trn_data
                 else:
                     old_trn_data = None
-
+            # Draw new samples if not in first round, or no data was loaded or if data should be appended.
             if r > 0 or not(load_trn_data) or append_trn_data:            
                 if type(n_train) == list:
                     try:
@@ -232,13 +233,15 @@ class SNPE(BaseInference):
 
                 trn_data = (trn_data[0], trn_data[1], iws)
 
+                # Given data should be appended, combine old trn_data and new trn_data.
                 if append_trn_data:
                     trn_data = (np.concatenate((old_trn_data[0], trn_data[0])),
                                 np.concatenate((old_trn_data[1], trn_data[1])),
                                 np.concatenate((old_trn_data[2], trn_data[2]))) 
                     n_train_round = trn_data[0].shape[0]
 
-                if r == 0 and (init_trn_data_folder is not None) and save_trn_data:
+                # Save data sampled from prior for future use.
+                if r == 0 and save_trn_data:
                     with open(init_trn_data_folder + '/initial_trn_data.pkl', 'wb') as f:
                         pickle.dump(trn_data, f, pickle.HIGHEST_PROTOCOL)
 
