@@ -1,4 +1,5 @@
 import numpy as np
+import pickle
 
 from delfi.inference.BaseInference import BaseInference
 from delfi.neuralnet.Trainer import Trainer
@@ -103,8 +104,10 @@ class SNPE(BaseInference):
         return loss
 
     def run(self, n_train=100, n_rounds=2, epochs=100, minibatch=50,
-            round_cl=1, stop_on_nan=False, proposal=None,
-            monitor=None, **kwargs):
+            round_cl=1, stop_on_nan=False, proposal=None, text_verbose=True,
+            monitor=None, load_trn_data=True, save_trn_data=True, append_trn_data=False,
+            init_trn_data_folder=None, **kwargs):
+
         """Run algorithm
 
         Parameters
@@ -148,7 +151,12 @@ class SNPE(BaseInference):
 
         for r in range(n_rounds):
             self.round += 1
-
+            if text_verbose: print('Round: ' + str(r))
+            if text_verbose: print('\t Sampling')
+            
+            # draw training data (z-transformed params and stats)
+            verbose = '(round {}) '.format(self.round) if self.verbose else False
+            
             if r == 0 and proposal is not None:
                 self.generator.proposal = proposal
             # if round > 1, set new proposal distribution before sampling
@@ -166,38 +174,63 @@ class SNPE(BaseInference):
 
                 self.generator.proposal = proposal
 
+            if r == 0 and (init_trn_data_folder is not None) and load_trn_data:
+                with open(init_trn_data_folder + '/initial_trn_data.pkl', 'rb') as f:
+                    initial_trn_data = pickle.load(f)
+                assert initial_trn_data[0].shape[0] == initial_trn_data[1].shape[0], 'Number of samples must be the same'
+                assert initial_trn_data[0].shape[0] == initial_trn_data[2].size, 'Number of samples must be the same'
+
             # number of training examples for this round
-            if type(n_train) == list:
-                try:
-                    n_train_round = n_train[self.round-1]
-                except:
-                    n_train_round = n_train[-1]
-            else:
-                n_train_round = n_train
+            if r == 0 and load_trn_data:
+                n_train_round = initial_trn_data[0].shape[0]
+                trn_data = initial_trn_data
+                if text_verbose: print('Used initial training data.')
+                if append_trn_data:
+                    old_trn_data = trn_data
+                else:
+                    old_trn_data = None
 
+            if r > 0 or not(load_trn_data) or append_trn_data:            
+                if type(n_train) == list:
+                    try:
+                        n_train_round = n_train[self.round-1]
+                    except:
+                        n_train_round = n_train[-1]
+                else:
+                    n_train_round = n_train       
+          
 
-            # draw training data (z-transformed params and stats)
-            verbose = '(round {}) '.format(self.round) if self.verbose else False
+                trn_data = self.gen(n_train_round, prior_mixin=self.prior_mixin, verbose=verbose)
+                n_train_round = trn_data[0].shape[0]
 
-            trn_data = self.gen(n_train_round, prior_mixin=self.prior_mixin, verbose=verbose)
-            n_train_round = trn_data[0].shape[0]
+                # precompute importance weights
+                if self.generator.proposal is not None:
+                    params = self.params_std * trn_data[0] + self.params_mean
+                    p_prior = self.generator.prior.eval(params, log=False)
+                    p_proposal = self.generator.proposal.eval(params, log=False)
+                    iws = p_prior / (self.prior_mixin * p_prior + (1 - self.prior_mixin) * p_proposal)
+                else:
+                    iws = np.ones((n_train_round,))
 
-            # precompute importance weights
-            if self.generator.proposal is not None:
-                params = self.params_std * trn_data[0] + self.params_mean
-                p_prior = self.generator.prior.eval(params, log=False)
-                p_proposal = self.generator.proposal.eval(params, log=False)
-                iws = p_prior / (self.prior_mixin * p_prior + (1 - self.prior_mixin) * p_proposal)
-            else:
-                iws = np.ones((n_train_round,))
+                # normalize weights
+                iws /= np.mean(iws)
 
-            # normalize weights
-            iws /= np.mean(iws)
+                if self.kernel is not None:
+                    iws *= self.kernel.eval(trn_data[1].reshape(n_train_round, -1))
 
-            if self.kernel is not None:
-                iws *= self.kernel.eval(trn_data[1].reshape(n_train_round, -1))
+                trn_data = (trn_data[0], trn_data[1], iws)
 
-            trn_data = (trn_data[0], trn_data[1], iws)
+                if append_trn_data:
+                    trn_data = (np.concatenate((old_trn_data[0], trn_data[0])),
+                                np.concatenate((old_trn_data[1], trn_data[1])),
+                                np.concatenate((old_trn_data[2], trn_data[2]))) 
+                    n_train_round = trn_data[0].shape[0]
+
+                if r == 0 and (init_trn_data_folder is not None) and save_trn_data:
+                    with open(init_trn_data_folder + '/initial_trn_data.pkl', 'wb') as f:
+                        pickle.dump(trn_data, f, pickle.HIGHEST_PROTOCOL)
+
+            if text_verbose: print('\t Training network ... ', end='')
             trn_inputs = [self.network.params, self.network.stats,
                           self.network.iws]
 
@@ -211,7 +244,7 @@ class SNPE(BaseInference):
                                 verbose=verbose, stop_on_nan=stop_on_nan))
 
             trn_datasets.append(trn_data)
-
+            if text_verbose: print('Done!')
             try:
                 posteriors.append(self.predict(self.obs))
             except np.linalg.LinAlgError:

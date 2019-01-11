@@ -18,7 +18,7 @@ class Discrete(BaseDistribution):
 
         p = np.asarray(p)
         assert p.ndim == 1, 'p must be a 1-d array'
-        assert np.isclose(np.sum(p), 1), 'p must sum to 1'
+        assert np.isclose(np.sum(p), 1), 'p must sum to 1 but sum is ' + str(np.sum(p)) + ' with elements ' + str(p)
         self.p = p
 
     @property

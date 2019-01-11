@@ -52,10 +52,12 @@ class BaseInference(metaclass=ABCMetaDoc):
         self.generator.proposal = None
 
         # generate a sample to get input and output dimensions
-        params, stats = generator.gen(1, skip_feedback=True, verbose=False)
-        kwargs.update({'n_inputs': stats.shape[1:],
-                       'n_outputs': params.shape[1],
-                       'seed': self.gen_newseed()})
+        if ('n_inputs' not in kwargs) or ('n_outputs' not in kwargs):
+            params, stats = generator.gen(1, skip_feedback=True, verbose=False)
+            kwargs.update({'n_inputs': stats.shape[1:],
+                           'n_outputs': params.shape[1]})
+
+        kwargs.update({'seed': self.gen_newseed()})
 
         self.kwargs = kwargs
 
@@ -75,8 +77,8 @@ class BaseInference(metaclass=ABCMetaDoc):
             self.params_std = self.generator.prior.std
         else:
             # parameters are set such that z-transform has no effect
-            self.params_mean = np.zeros((params.shape[1],))
-            self.params_std = np.ones((params.shape[1],))
+            self.params_mean = np.zeros((kwargs['n_outputs']))
+            self.params_std = np.ones((kwargs['n_outputs'],))
 
         # parameters for z-transform for stats
         if pilot_samples is not None and pilot_samples != 0:
@@ -86,8 +88,8 @@ class BaseInference(metaclass=ABCMetaDoc):
             self.pilot_run(pilot_samples)
         else:
             # parameters are set such that z-transform has no effect
-            self.stats_mean = np.zeros((stats.shape[1],))
-            self.stats_std = np.ones((stats.shape[1],))
+            self.stats_mean = np.zeros((kwargs['n_inputs'][0],))
+            self.stats_std = np.ones((kwargs['n_inputs'][0],))
 
         # observables contains vars that can be monitored during training
         self.compile_observables()
