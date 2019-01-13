@@ -225,7 +225,7 @@ class MoG(BaseMixture):
         return MoG(self.a, xs=xs, seed=self.seed)
 
     def eval_marginal(self, x, dims, log=True):
-        dims = np.atleast_1d(p.asarray(dims))
+        dims = np.atleast_1d(np.asarray(dims))
         assert x.shape[1] == dims.size, 'second dimension of x must be equal to number of dimensions'
     
         marginal_m_list = [np.array([self.xs[comp].m[dim] for dim in dims]) for comp in range(self.n_components)]

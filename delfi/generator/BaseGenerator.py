@@ -101,7 +101,7 @@ class BaseGenerator(metaclass=ABCMetaDoc):
         if rem_i != n_samples:
             yield params[rem_i:]
 
-    def gen(self, n_samples, n_reps=1, skip_feedback=False, prior_mixin=0, minibatch=50, keep_data=True, verbose=True):
+    def gen(self, n_samples, n_reps=1, skip_feedback=False, prior_mixin=0, minibatch=50, keep_data=True, verbose=True, from_prior=False):
         """Draw parameters and run forward model
 
         Parameters
@@ -115,6 +115,8 @@ class BaseGenerator(metaclass=ABCMetaDoc):
         verbose : bool or str
             If False, will not display progress bars. If a string is passed,
             it will be appended to the description of the progress bar.
+        from_prior: bool
+            Can be used to store data from prior. Not used in BaseGenerator
 
         Returns
         -------
@@ -145,7 +147,7 @@ class BaseGenerator(metaclass=ABCMetaDoc):
         with pbar:
             for params_batch in self.iterate_minibatches(params, minibatch):
                 # run forward model for all params, each n_reps times
-                result = self.model.gen(params_batch, n_reps=n_reps, pbar=pbar)
+                result = self.model.gen(params_batch, n_reps=n_reps, pbar=pbar, from_prior=from_prior)
 
                 stats, params = self.process_batch(params_batch, result,skip_feedback=skip_feedback)
                 final_params += params

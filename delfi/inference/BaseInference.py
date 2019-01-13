@@ -279,7 +279,7 @@ class BaseInference(metaclass=ABCMetaDoc):
         # ensure MoG returns standardized output on x' = 0
         self.conditional_norm(fcv)
 
-    def gen(self, n_samples, n_reps=1, prior_mixin=0, verbose=None):
+    def gen(self, n_samples, n_reps=1, prior_mixin=0, verbose=None, from_prior=False):
         """Generate from generator and z-transform
 
         Parameters
@@ -292,7 +292,7 @@ class BaseInference(metaclass=ABCMetaDoc):
             If None is passed, will default to self.verbose
         """
         verbose = self.verbose if verbose is None else verbose
-        params, stats = self.generator.gen(n_samples, prior_mixin=prior_mixin, verbose=verbose)
+        params, stats = self.generator.gen(n_samples, prior_mixin=prior_mixin, verbose=verbose, from_prior=from_prior)
 
         # z-transform params and stats
         params = (params - self.params_mean) / self.params_std

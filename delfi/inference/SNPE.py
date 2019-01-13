@@ -178,7 +178,7 @@ class SNPE(BaseInference):
 
             # Loading trainind from previous trainings. Only samples from the prior distribution are loaded.
             if r == 0 and load_trn_data:
-		with open(init_trn_data_folder + '/initial_trn_data.pkl', 'rb') as f:
+                with open(init_trn_data_folder + '/initial_trn_data.pkl', 'rb') as f:
                     initial_trn_data = pickle.load(f)
                 assert initial_trn_data[0].shape[0] == initial_trn_data[1].shape[0], 'Number of samples must be the same'
                 assert initial_trn_data[0].shape[0] == initial_trn_data[2].size, 'Number of samples must be the same'
@@ -201,7 +201,7 @@ class SNPE(BaseInference):
                     n_train_round = n_train       
           
 
-                trn_data = self.gen(n_train_round, prior_mixin=self.prior_mixin, verbose=verbose)
+                trn_data = self.gen(n_train_round, prior_mixin=self.prior_mixin, verbose=verbose, from_prior=(r==0))
                 n_train_round = trn_data[0].shape[0]
 
                 # precompute importance weights
