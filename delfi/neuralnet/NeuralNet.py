@@ -19,7 +19,7 @@ def MyLogSumExp(x, axis=None):
 class NeuralNet(object):
     def __init__(self, n_inputs, n_outputs, n_components=1, n_filters=[],
                  n_hiddens=[10, 10], n_rnn=None, impute_missing=True, seed=None,
-                 svi=True):
+                 svi=True, init_trn_data_folder=None):
         """Initialize a mixture density network with custom layers
 
         Parameters
