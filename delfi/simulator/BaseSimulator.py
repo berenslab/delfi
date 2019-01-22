@@ -24,7 +24,7 @@ class BaseSimulator(metaclass=ABCMetaDoc):
         self.rng = np.random.RandomState(seed=seed)
         self.seed = seed
 
-    def gen(self, params_list, n_reps=1, pbar=None):
+    def gen(self, params_list, n_reps=1, pbar=None, from_prior=False):
         """Forward model for simulator for list of parameters
 
         Parameters

@@ -105,7 +105,7 @@ class SNPE(BaseInference):
 
     def run(self, n_train=100, n_rounds=2, epochs=100, minibatch=50,
             round_cl=1, stop_on_nan=False, proposal=None, text_verbose=True,
-            monitor=None, load_trn_data=True, save_trn_data=True, append_trn_data=False,
+            monitor=None, load_trn_data=False, save_trn_data=False, append_trn_data=False,
             init_trn_data_folder=None, verbose=False, **kwargs):
 
         """Run algorithm
