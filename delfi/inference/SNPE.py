@@ -116,6 +116,17 @@ class SNPE(BaseInference):
         return loss
 
     def get_obs(self, tds=None):
+      """ Get or compute observed value
+      
+      Parameters:
+      -----------
+      
+      tds: array
+          Only needed when obs is computed as percentile of current samples.
+          Will then be used to compute the obs_perc percentile of the samples relative
+          to the true observed value. Should eventually converge to the true value.
+      """
+      
       if self.obs_perc is None:
         if isinstance(self.obs, np.ndarray):
             # Take fixed value.
