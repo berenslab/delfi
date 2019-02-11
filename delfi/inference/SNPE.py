@@ -6,7 +6,7 @@ from delfi.neuralnet.Trainer import Trainer
 from delfi.neuralnet.loss.regularizer import svi_kl_init, svi_kl_zero
 
 class SNPE(BaseInference):
-    def __init__(self, generator, obs, prior_norm=False, pilot_samples=100,
+    def __init__(self, generator, obs=None, obs_perc=None, obs_perc_use_all_data=False, prior_norm=False, pilot_samples=100,
                  convert_to_T=3, reg_lambda=0.01, prior_mixin=0, kernel=None, seed=None, verbose=True,
                  **kwargs):
         """Sequential neural posterior estimation (SNPE)
@@ -15,8 +15,17 @@ class SNPE(BaseInference):
         ----------
         generator : generator instance
             Generator instance
-        obs : array
-            Observation in the format the generator returns (1 x n_summary)
+        obs : array or list of arrays
+            Observation or list of of observations in the format the generator returns (1 x n_summary)
+            If list, obs will be changed every round. In this case it should be converging to the true value.
+            The different observed value can be used as guidance for the algorithm.
+            Alternatively, set obs_perc.
+        obs_perc : double in [0,100]
+            If set, adaptively change obs relative to percentile of best samples.
+            Set to zero to use best sample only.
+        obs_perc_use_all_data : bool
+            Set to True to use all training data to compute percentile obs.
+            Default is False. Then only the samples of the current round are used.
         prior_norm : bool
             If set to True, will z-transform params based on mean/std of prior
         pilot_samples : None or int
@@ -55,8 +64,11 @@ class SNPE(BaseInference):
         super().__init__(generator, prior_norm=prior_norm,
                          pilot_samples=pilot_samples, seed=seed,
                          verbose=verbose, **kwargs)
-        assert obs is not None, "SNPE requires observed data"
-        self.obs = np.asarray(obs)
+        assert obs is not None or obs_perc is not None, 'Default SNPE needs obs. Adaptive obs SNPE needs obs_perc in (0,1]'
+        if obs is not None:
+          self.obs = np.asarray(obs)
+        self.obs_perc = obs_perc
+        self.obs_perc_use_all_data = obs_perc_use_all_data
 
         if np.any(np.isnan(self.obs)):
             raise ValueError("Observed data contains NaNs")
@@ -103,10 +115,25 @@ class SNPE(BaseInference):
 
         return loss
 
+    def get_obs(self, tds=None):
+      if self.obs_perc is None:
+        if isinstance(self.obs, np.ndarray):
+            # Take fixed value.
+            return self.obs
+        elif isinstance(self.obs, list):
+            # Take element from round. If more rounds than elements, take last.
+            return self.obs[np.min([len(self.obs)-1, r-1])]
+      else:
+          assert isinstance(self.obs, np.ndarray)
+          # Take percentile of samples.
+          tds = np.abs(tds - self.obs)
+          obs = tds[np.argsort(tds.flatten())[int(np.round(self.obs_perc/100*tds.shape[0]))]]
+          return np.reshape(obs, self.obs.shape)
+        
     def run(self, n_train=100, n_rounds=2, epochs=100, minibatch=50,
             round_cl=1, stop_on_nan=False, proposal=None, text_verbose=True,
             monitor=None, load_trn_data=False, save_trn_data=False, append_trn_data=False,
-            init_trn_data_file=None, verbose=False,changing_obs=False, **kwargs):
+            init_trn_data_file=None, verbose=False, **kwargs):
 
         """Run algorithm
 
@@ -179,11 +206,9 @@ class SNPE(BaseInference):
             # if round > 1, set new proposal distribution before sampling
             elif self.round > 1:
                 # posterior becomes new proposal prior
-                # choose specific observation, if changing_obs
-                if changing_obs:
-                    proposal = self.predict(self.obs[self.round-1])  # see super
-                else:
-                    proposal = self.predict(self.obs)  # see super
+                # choose specific observation. It is either fixed, or changes per round.
+                proposal = self.predict(obs) # see super
+                self.kernel.obs = obs # Update observed in kernel.
 
                 # convert proposal to student's T?
                 if self.convert_to_T is not None:
@@ -209,6 +234,7 @@ class SNPE(BaseInference):
                     old_trn_data = trn_data
                 else:
                     old_trn_data = None
+                    
             # Draw new samples if not in first round, or no data was loaded or if data should be appended.
             if r > 0 or not(load_trn_data) or append_trn_data:            
                 if type(n_train) == list:
@@ -267,11 +293,17 @@ class SNPE(BaseInference):
 
             trn_datasets.append(trn_data)
             if text_verbose: print('Done!')
+            
+            # Get observed values. (Might change every round)
+            if self.obs_perc_use_all_data:
+                obs_tds = np.concatenate([tds_i[1] for tds_i in trn_datasets])
+            else:
+                obs_tds = trn_data[1]
+            obs = self.get_obs(obs_tds)
+            if self.verbose: print('New obs = ' + str(obs))
+            
             try:
-                if changing_obs:
-                    posteriors.append(self.predict(self.obs[self.round-1]))  # see super
-                else:
-                    posteriors.append(self.predict(self.obs))
+                posteriors.append(self.predict(obs))
             except np.linalg.LinAlgError:
                 posteriors.append(None)
                 print("Cannot predict posterior after round {} due to NaNs".format(r))
