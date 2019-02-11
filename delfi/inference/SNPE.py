@@ -106,7 +106,7 @@ class SNPE(BaseInference):
     def run(self, n_train=100, n_rounds=2, epochs=100, minibatch=50,
             round_cl=1, stop_on_nan=False, proposal=None, text_verbose=True,
             monitor=None, load_trn_data=False, save_trn_data=False, append_trn_data=False,
-            init_trn_data_folder=None, verbose=False,changing_obs=False, **kwargs):
+            init_trn_data_file=None, verbose=False,changing_obs=False, **kwargs):
 
         """Run algorithm
 
@@ -136,13 +136,13 @@ class SNPE(BaseInference):
         text_verbose: bool
             if True, simple print output for the progress
         load_trn_data:bool
-            If True, load tds from specified folder
+            If True, load tds from specified file
         save_trn_data: bool
-            If True, save tds to specified folder
+            If True, save tds to specified file
         append_trn_data: bool
             if True draws n_train new trainingsdata and appends it to the loaded tds
-        init_trn_data_folder: None or folderpath
-            if filepath loads/saves the trainingsdata to this folder
+        init_trn_data_file: None or filepath
+            if filepath loads/saves the trainingsdata of this file
 
 
         kwargs : additional keyword arguments
@@ -162,7 +162,10 @@ class SNPE(BaseInference):
         posteriors = []
 
         if load_trn_data or save_trn_data:
-            assert init_trn_data_folder is not None, 'If you want to load or save data, please state a folder'
+            assert init_trn_data_file is not None, 'If you want to load or save data, please state a file'
+        if append_trn_data:
+            assert load_trn_data, 'Can\'t append if loading is not set True'
+        
         for r in range(n_rounds):
             self.round += 1
             if text_verbose: print('Round: ' + str(r))
@@ -194,7 +197,7 @@ class SNPE(BaseInference):
 
             # Loading trainind from previous trainings. Only samples from the prior distribution are loaded.
             if r == 0 and load_trn_data:
-                with open(init_trn_data_folder + '/initial_trn_data.pkl', 'rb') as f:
+                with open(init_trn_data_file + '.pkl', 'rb') as f:
                     initial_trn_data = pickle.load(f)
                 assert initial_trn_data[0].shape[0] == initial_trn_data[1].shape[0], 'Number of samples must be the same'
                 assert initial_trn_data[0].shape[0] == initial_trn_data[2].size, 'Number of samples must be the same'
@@ -246,7 +249,7 @@ class SNPE(BaseInference):
 
                 # Save data sampled from prior for future use.
                 if r == 0 and save_trn_data:
-                    with open(init_trn_data_folder + '/initial_trn_data.pkl', 'wb') as f:
+                    with open(init_trn_data_file + '.pkl', 'wb') as f:
                         pickle.dump(trn_data, f, pickle.HIGHEST_PROTOCOL)
 
             if text_verbose: print('\t Training network ... ', end='')
