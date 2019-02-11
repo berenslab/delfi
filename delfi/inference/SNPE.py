@@ -64,11 +64,12 @@ class SNPE(BaseInference):
         super().__init__(generator, prior_norm=prior_norm,
                          pilot_samples=pilot_samples, seed=seed,
                          verbose=verbose, **kwargs)
-        assert obs is not None or obs_perc is not None, 'Default SNPE needs obs. Adaptive obs SNPE needs obs_perc in (0,1]'
-        if obs is not None:
-          self.obs = np.asarray(obs)
+        assert obs is not None, 'SNPE needs obs'
+        self.obs = np.asarray(obs)
         self.obs_perc = obs_perc
         self.obs_perc_use_all_data = obs_perc_use_all_data
+        if obs_perc is not None:
+            self.obs_computed = []
 
         if np.any(np.isnan(self.obs)):
             raise ValueError("Observed data contains NaNs")
@@ -311,6 +312,7 @@ class SNPE(BaseInference):
             else:
                 obs_tds = trn_data[1]
             obs = self.get_obs(obs_tds)
+            self.obs_computed.append(obs)
             if self.verbose: print('New obs = ' + str(obs))
             
             try:
