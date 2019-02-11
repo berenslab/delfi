@@ -106,7 +106,7 @@ class SNPE(BaseInference):
     def run(self, n_train=100, n_rounds=2, epochs=100, minibatch=50,
             round_cl=1, stop_on_nan=False, proposal=None, text_verbose=True,
             monitor=None, load_trn_data=False, save_trn_data=False, append_trn_data=False,
-            init_trn_data_folder=None, verbose=False, **kwargs):
+            init_trn_data_folder=None, verbose=False,changing_obs=False, **kwargs):
 
         """Run algorithm
 
@@ -176,7 +176,11 @@ class SNPE(BaseInference):
             # if round > 1, set new proposal distribution before sampling
             elif self.round > 1:
                 # posterior becomes new proposal prior
-                proposal = self.predict(self.obs)  # see super
+                # choose specific observation, if changing_obs
+                if changing_obs:
+                    proposal = self.predict(self.obs[self.round-1])  # see super
+                else:
+                    proposal = self.predict(self.obs)  # see super
 
                 # convert proposal to student's T?
                 if self.convert_to_T is not None:
@@ -261,7 +265,10 @@ class SNPE(BaseInference):
             trn_datasets.append(trn_data)
             if text_verbose: print('Done!')
             try:
-                posteriors.append(self.predict(self.obs))
+                if changing_obs:
+                    posteriors.append(self.predict(self.obs[self.round-1]))  # see super
+                else:
+                    posteriors.append(self.predict(self.obs))
             except np.linalg.LinAlgError:
                 posteriors.append(None)
                 print("Cannot predict posterior after round {} due to NaNs".format(r))

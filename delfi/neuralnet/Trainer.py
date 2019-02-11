@@ -73,6 +73,10 @@ class Trainer:
         # outputs
         self.trn_outputs_names = ['loss']
         self.trn_outputs_nodes = [self.loss]
+
+        #self.w_missing = []
+        #self.imputed_values = []
+
         if monitor is not None and len(monitor) > 0:
             monitor_names, monitor_nodes = zip(*monitor.items())
             self.trn_outputs_names += monitor_names
@@ -144,6 +148,11 @@ class Trainer:
                 desc += verbose
             pbar.set_description(desc)
 
+        # get weights of imputed values
+        #weights = self.network.layer['missing'].R.get_value()
+        #self.w_missing.append(weights)
+
+
         with pbar:
             # loop over epochs
             for epoch in range(epochs):
@@ -160,6 +169,14 @@ class Trainer:
 
                     for name, value in zip(self.trn_outputs_names, outputs):
                         trn_outputs[name].append(value)
+
+                    '''
+                    # get values to store
+                    imp_vals = self.network.layer['missing'].get_output_for(trn_batch[1]).eval()
+                    weights = self.network.layer['missing'].R.get_value()
+                    self.w_missing.append(weights)
+                    self.imputed_values.append(imp_vals)
+                    '''
 
                     trn_loss = trn_outputs['loss'][-1]
                     diff = self.loss - trn_loss
@@ -179,6 +196,10 @@ class Trainer:
         # convert lists to arrays
         for name, value in trn_outputs.items():
             trn_outputs[name] = np.asarray(value)
+
+        #trn_outputs['w_missing'] = self.w_missing
+        #trn_outputs['imputed_values'] = self.imputed_values
+
 
         return trn_outputs
 
