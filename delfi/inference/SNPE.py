@@ -276,13 +276,16 @@ class SNPE(BaseInference):
             
             # Get observed values. (Might change every round)
             obs = self.get_obs(trn_data[1])
-            self.obs_computed.append(obs)
+            if self.obs_perc is not None:
+                self.obs_computed.append(obs)
+                
             if self.verbose or text_verbose: print('New obs = ' + str(obs))
             
             # Continue generating data?
             if generate_data:
-                self.kernel.obs = obs # Update observed in kernel.
+                
                 if self.kernel is not None:
+                    self.kernel.obs = obs # Update observed in kernel.
                     iws *= self.kernel.eval(trn_data[1].reshape(n_train_round, -1))
 
                 trn_data = (trn_data[0], trn_data[1], iws)
