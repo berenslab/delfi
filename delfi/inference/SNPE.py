@@ -67,7 +67,8 @@ class SNPE(BaseInference):
         assert obs is not None, 'SNPE needs obs'
         self.obs = np.asarray(obs)
         self.obs_perc = obs_perc
-        self.obs_perc_use_all_data = obs_perc_use_all_data
+        assert not obs_perc_use_all_data, 'Not implemented'
+        
         if obs_perc is not None:
             self.obs_computed = []
 
@@ -208,7 +209,6 @@ class SNPE(BaseInference):
         for r in range(n_rounds):
             self.round += 1
             if text_verbose: print('Round: ' + str(r))
-            if text_verbose: print('\t Sampling')
             
             # draw training data (z-transformed params and stats)
             verbose = '(round {}) '.format(self.round) if self.verbose else False
@@ -220,7 +220,6 @@ class SNPE(BaseInference):
                 # posterior becomes new proposal prior
                 # choose specific observation. It is either fixed, or changes per round.
                 proposal = self.predict(obs) # see super
-                self.kernel.obs = obs # Update observed in kernel.
 
                 # convert proposal to student's T?
                 if self.convert_to_T is not None:
@@ -248,7 +247,9 @@ class SNPE(BaseInference):
                     old_trn_data = None
                     
             # Draw new samples if not in first round, or no data was loaded or if data should be appended.
-            if r > 0 or not(load_trn_data) or append_trn_data:            
+            generate_data = r > 0 or not(load_trn_data) or append_trn_data
+            
+            if generate_data:            
                 if type(n_train) == list:
                     try:
                         n_train_round = n_train[self.round-1]
@@ -257,7 +258,7 @@ class SNPE(BaseInference):
                 else:
                     n_train_round = n_train       
           
-
+                if text_verbose: print('\t Sampling ' + str(n_train_round) + ' samples')
                 trn_data = self.gen(n_train_round, prior_mixin=self.prior_mixin, verbose=verbose, from_prior=(r==0))
                 n_train_round = trn_data[0].shape[0]
 
@@ -272,7 +273,15 @@ class SNPE(BaseInference):
 
                 # normalize weights
                 iws /= np.mean(iws)
-
+            
+            # Get observed values. (Might change every round)
+            obs = self.get_obs(trn_data[1])
+            self.obs_computed.append(obs)
+            if self.verbose or text_verbose: print('New obs = ' + str(obs))
+            
+            # Continue generating data?
+            if generate_data:
+                self.kernel.obs = obs # Update observed in kernel.
                 if self.kernel is not None:
                     iws *= self.kernel.eval(trn_data[1].reshape(n_train_round, -1))
 
@@ -305,15 +314,6 @@ class SNPE(BaseInference):
 
             trn_datasets.append(trn_data)
             if text_verbose: print('Done!')
-            
-            # Get observed values. (Might change every round)
-            if self.obs_perc_use_all_data:
-                obs_tds = np.concatenate([tds_i[1] for tds_i in trn_datasets])
-            else:
-                obs_tds = trn_data[1]
-            obs = self.get_obs(obs_tds)
-            self.obs_computed.append(obs)
-            if self.verbose: print('New obs = ' + str(obs))
             
             try:
                 posteriors.append(self.predict(obs))
