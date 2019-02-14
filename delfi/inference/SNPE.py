@@ -295,6 +295,7 @@ class SNPE(BaseInference):
                         bandwidth_tot = abs_tds[np.argsort(abs_tds.flatten())[int(np.round(self.kernel_bandwidth_perc/100*abs_tds.shape[0]))]]
                         # Subtract current obs value.
                         bandwidth_rel = bandwidth_tot - obs
+                        if self.verbose or text_verbose: print('New bandwidth = ' + str(bandwidth_rel))
                         self.kernel.set_bandwidth(bandwidth_rel)
                         
                     iws *= self.kernel.eval(trn_data[1].reshape(n_train_round, -1))
