@@ -78,8 +78,10 @@ class SNPE(BaseInference):
         
         self.obs = np.asarray(obs)
         self.pseudo_obs_perc = pseudo_obs_perc
+        self.pseudo_obs_n = pseudo_obs_n
         self.pesudo_obs_use_all_data = pesudo_obs_use_all_data
         self.kernel_bandwidth_perc = kernel_bandwidth_perc
+        self.kernel_bandwidth_n = kernel_bandwidth_n
         
         if pseudo_obs_perc is not None:
             self.pseudo_obs = []
