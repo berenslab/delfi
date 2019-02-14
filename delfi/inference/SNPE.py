@@ -6,7 +6,8 @@ from delfi.neuralnet.Trainer import Trainer
 from delfi.neuralnet.loss.regularizer import svi_kl_init, svi_kl_zero
 
 class SNPE(BaseInference):
-    def __init__(self, generator, obs=None, pseudo_obs_perc=None, psuedo_obs_n=None, kernel_bandwidth_perc=None,
+    def __init__(self, generator, obs=None, pseudo_obs_perc=None, psuedo_obs_n=None,
+                 kernel_bandwidth_perc=None, kernel_bandwidth_n=None,
                  pesudo_obs_use_all_data=False, prior_norm=False, pilot_samples=100,
                  convert_to_T=3, reg_lambda=0.01, prior_mixin=0, kernel=None, seed=None, verbose=True,
                  **kwargs):
@@ -28,6 +29,8 @@ class SNPE(BaseInference):
             If set, adaptively change obs. Set obs always to the n-th best sample.
         kernel_bandwidth_perc : double in [0,100]
             If set, adaptively change kernel bandwidth as percentile of best samples.
+        kernel_bandwidth_n : integer in [1, np.inf]
+            If set, adaptively change kernel bandwidth relatively to the n-th best sample.
         pesudo_obs_use_all_data : bool
             Set to True to use all training data to compute percentile obs.
             Default is False. Then only the samples of the current round are used.
@@ -71,6 +74,8 @@ class SNPE(BaseInference):
                          verbose=verbose, **kwargs)
         assert obs is not None, 'SNPE needs obs'
         assert pseudo_obs_perc is None or psuedo_obs_n is None, 'Can\'t set both. Use one or none.'
+        assert kernel_bandwidth_perc is None or kernel_bandwidth_n is None, 'Can\'t set both. Use one or none.'
+        
         self.obs = np.asarray(obs)
         self.pseudo_obs_perc = pseudo_obs_perc
         self.pesudo_obs_use_all_data = pesudo_obs_use_all_data
@@ -304,10 +309,15 @@ class SNPE(BaseInference):
                 
                 if self.kernel is not None:
                     self.kernel.obs = obs # Update observed in kernel.
-                    if self.kernel_bandwidth_perc is not None:
-                        # Compute percentile.
+                    if self.kernel_bandwidth_perc is not None or self.kernel_bandwidth_n is not None:
                         abs_tds = np.abs(perc_tds - self.obs)
-                        bandwidth_tot = abs_tds[np.argsort(abs_tds.flatten())[int(np.round(self.kernel_bandwidth_perc/100*abs_tds.shape[0]))]]
+                        if self.kernel_bandwidth_perc is not None:
+                            # Compute percentile.
+                            bandwidth_tot = abs_tds[np.argsort(abs_tds.flatten())[int(np.round(self.kernel_bandwidth_perc/100*abs_tds.shape[0]))]]
+                        elif self.kernel_bandwidth_n is not None:
+                            # Compute n-th best sample.
+                            bandwidth_tot = abs_tds[np.argsort(abs_tds.flatten())[self.kernel_bandwidth_n]]
+                        
                         # Subtract current obs value.
                         bandwidth_rel = bandwidth_tot - obs
                         if self.verbose or text_verbose: print('New bandwidth = ' + str(bandwidth_rel))
