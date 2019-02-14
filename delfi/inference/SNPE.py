@@ -6,9 +6,9 @@ from delfi.neuralnet.Trainer import Trainer
 from delfi.neuralnet.loss.regularizer import svi_kl_init, svi_kl_zero
 
 class SNPE(BaseInference):
-    def __init__(self, generator, obs=None, pseudo_obs_perc=None, psuedo_obs_n=None,
+    def __init__(self, generator, obs=None, pseudo_obs_perc=None, pseudo_obs_n=None,
                  kernel_bandwidth_perc=None, kernel_bandwidth_n=None,
-                 pesudo_obs_use_all_data=False, prior_norm=False, pilot_samples=100,
+                 pseduo_obs_use_all_data=False, prior_norm=False, pilot_samples=100,
                  convert_to_T=3, reg_lambda=0.01, prior_mixin=0, kernel=None, seed=None, verbose=True,
                  **kwargs):
         """Sequential neural posterior estimation (SNPE)
@@ -25,13 +25,13 @@ class SNPE(BaseInference):
         pseudo_obs_perc : double in [0,100]
             If set, adaptively change obs relative to percentile of best samples.
             Set to zero to use best sample only.
-        psuedo_obs_n : integer in [1, np.inf]
+        pseudo_obs_n : integer in [1, np.inf]
             If set, adaptively change obs. Set obs always to the n-th best sample.
         kernel_bandwidth_perc : double in [0,100]
             If set, adaptively change kernel bandwidth as percentile of best samples.
         kernel_bandwidth_n : integer in [1, np.inf]
             If set, adaptively change kernel bandwidth relatively to the n-th best sample.
-        pesudo_obs_use_all_data : bool
+        pseduo_obs_use_all_data : bool
             Set to True to use all training data to compute percentile obs.
             Default is False. Then only the samples of the current round are used.
         prior_norm : bool
@@ -73,13 +73,13 @@ class SNPE(BaseInference):
                          pilot_samples=pilot_samples, seed=seed,
                          verbose=verbose, **kwargs)
         assert obs is not None, 'SNPE needs obs'
-        assert pseudo_obs_perc is None or psuedo_obs_n is None, 'Can\'t set both. Use one or none.'
+        assert pseudo_obs_perc is None or pseudo_obs_n is None, 'Can\'t set both. Use one or none.'
         assert kernel_bandwidth_perc is None or kernel_bandwidth_n is None, 'Can\'t set both. Use one or none.'
         
         self.obs = np.asarray(obs)
         self.pseudo_obs_perc = pseudo_obs_perc
         self.pseudo_obs_n = pseudo_obs_n
-        self.pesudo_obs_use_all_data = pesudo_obs_use_all_data
+        self.pseduo_obs_use_all_data = pseduo_obs_use_all_data
         self.kernel_bandwidth_perc = kernel_bandwidth_perc
         self.kernel_bandwidth_n = kernel_bandwidth_n
         
@@ -143,7 +143,7 @@ class SNPE(BaseInference):
           to the true observed value. Should eventually converge to the true value.
       """
       
-      if self.pseudo_obs_perc is None and self.psuedo_obs_n is None:
+      if self.pseudo_obs_perc is None and self.pseudo_obs_n is None:
         if isinstance(self.obs, np.ndarray):
             # Take fixed value.
             return self.obs
@@ -157,9 +157,9 @@ class SNPE(BaseInference):
               # Take percentile of samples.
               obs = abs_tds[np.argsort(abs_tds.flatten())[int(np.round(self.pseudo_obs_perc/100*abs_tds.shape[0]))]]
               return np.reshape(obs, self.obs.shape)
-          elif self.psuedo_obs_n is not None:
+          elif self.pseudo_obs_n is not None:
               # Take n-th best sample.
-              obs = abs_tds[np.argsort(abs_tds.flatten())[self.psuedo_obs_n]]
+              obs = abs_tds[np.argsort(abs_tds.flatten())[self.pseudo_obs_n]]
               return np.reshape(obs, self.obs.shape)
         
     def run(self, n_train=100, n_rounds=2, epochs=100, minibatch=50,
@@ -297,7 +297,7 @@ class SNPE(BaseInference):
             
             # Get training values.
             perc_tds = trn_data[1]
-            if self.pesudo_obs_use_all_data:
+            if self.pseduo_obs_use_all_data:
                 perc_tds = np.concatenate([perc_tds] + [tds_i[1] for tds_i in trn_datasets])                
             
             # Get observed or pseudo-observed value.
