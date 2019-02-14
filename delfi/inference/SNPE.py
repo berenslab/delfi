@@ -83,7 +83,7 @@ class SNPE(BaseInference):
         self.kernel_bandwidth_perc = kernel_bandwidth_perc
         self.kernel_bandwidth_n = kernel_bandwidth_n
         
-        if pseudo_obs_perc is not None:
+        if pseudo_obs_perc is not None or pseudo_obs_n is not None:
             self.pseudo_obs = []
 
         if np.any(np.isnan(self.obs)):
@@ -302,7 +302,8 @@ class SNPE(BaseInference):
             
             # Get observed or pseudo-observed value.
             obs = self.get_obs(perc_tds)
-            if self.pseudo_obs_perc is not None: self.pseudo_obs.append(obs)
+            if self.pseudo_obs_perc is not None or self.pseudo_obs_n:
+                self.pseudo_obs.append(obs)
                 
             if self.verbose or text_verbose: print('Observed = ' + str(obs))
             
