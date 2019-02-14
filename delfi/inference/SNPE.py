@@ -8,7 +8,7 @@ from delfi.neuralnet.loss.regularizer import svi_kl_init, svi_kl_zero
 class SNPE(BaseInference):
     def __init__(self, generator, obs=None, pseudo_obs_perc=None, pseudo_obs_n=None,
                  kernel_bandwidth_perc=None, kernel_bandwidth_n=None,
-                 pseduo_obs_use_all_data=False, prior_norm=False, pilot_samples=100,
+                 pseudo_obs_use_all_data=False, prior_norm=False, pilot_samples=100,
                  convert_to_T=3, reg_lambda=0.01, prior_mixin=0, kernel=None, seed=None, verbose=True,
                  **kwargs):
         """Sequential neural posterior estimation (SNPE)
@@ -31,7 +31,7 @@ class SNPE(BaseInference):
             If set, adaptively change kernel bandwidth as percentile of best samples.
         kernel_bandwidth_n : integer in [1, np.inf]
             If set, adaptively change kernel bandwidth relatively to the n-th best sample.
-        pseduo_obs_use_all_data : bool
+        pseudo_obs_use_all_data : bool
             Set to True to use all training data to compute percentile obs.
             Default is False. Then only the samples of the current round are used.
         prior_norm : bool
@@ -79,7 +79,7 @@ class SNPE(BaseInference):
         self.obs = np.asarray(obs)
         self.pseudo_obs_perc = pseudo_obs_perc
         self.pseudo_obs_n = pseudo_obs_n
-        self.pseduo_obs_use_all_data = pseduo_obs_use_all_data
+        self.pseudo_obs_use_all_data = pseudo_obs_use_all_data
         self.kernel_bandwidth_perc = kernel_bandwidth_perc
         self.kernel_bandwidth_n = kernel_bandwidth_n
         
@@ -297,7 +297,7 @@ class SNPE(BaseInference):
             
             # Get training values.
             perc_tds = trn_data[1]
-            if self.pseduo_obs_use_all_data:
+            if self.pseudo_obs_use_all_data:
                 perc_tds = np.concatenate([perc_tds] + [tds_i[1] for tds_i in trn_datasets])                
             
             # Get observed or pseudo-observed value.
