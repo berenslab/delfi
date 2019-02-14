@@ -289,7 +289,7 @@ class SNPE(BaseInference):
             obs = self.get_obs(perc_tds)
             if self.obs_perc is not None: self.obs_computed.append(obs)
                 
-            if self.verbose or text_verbose: print('New obs = ' + str(obs))
+            if self.verbose or text_verbose: print('Observed = ' + str(obs))
             
             # Continue generating data?
             if generate_data:
