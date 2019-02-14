@@ -6,8 +6,8 @@ from delfi.neuralnet.Trainer import Trainer
 from delfi.neuralnet.loss.regularizer import svi_kl_init, svi_kl_zero
 
 class SNPE(BaseInference):
-    def __init__(self, generator, obs=None, obs_perc=None, kernel_bandwidth_perc=None,
-                 perc_use_all_data=False, prior_norm=False, pilot_samples=100,
+    def __init__(self, generator, obs=None, pseudo_obs_perc=None, psuedo_obs_n=None, kernel_bandwidth_perc=None,
+                 pesudo_obs_use_all_data=False, prior_norm=False, pilot_samples=100,
                  convert_to_T=3, reg_lambda=0.01, prior_mixin=0, kernel=None, seed=None, verbose=True,
                  **kwargs):
         """Sequential neural posterior estimation (SNPE)
@@ -20,13 +20,15 @@ class SNPE(BaseInference):
             Observation or list of of observations in the format the generator returns (1 x n_summary)
             If list, obs will be changed every round. In this case it should be converging to the true value.
             The different observed value can be used as guidance for the algorithm.
-            Alternatively, set obs_perc.
-        obs_perc : double in [0,100]
+            Alternatively, set pseudo_obs_perc.
+        pseudo_obs_perc : double in [0,100]
             If set, adaptively change obs relative to percentile of best samples.
             Set to zero to use best sample only.
+        psuedo_obs_n : integer in [1, np.inf]
+            If set, adaptively change obs. Set obs always to the n-th best sample.
         kernel_bandwidth_perc : double in [0,100]
             If set, adaptively change kernel bandwidth as percentile of best samples.
-        perc_use_all_data : bool
+        pesudo_obs_use_all_data : bool
             Set to True to use all training data to compute percentile obs.
             Default is False. Then only the samples of the current round are used.
         prior_norm : bool
@@ -68,13 +70,14 @@ class SNPE(BaseInference):
                          pilot_samples=pilot_samples, seed=seed,
                          verbose=verbose, **kwargs)
         assert obs is not None, 'SNPE needs obs'
+        assert pseudo_obs_perc is None or psuedo_obs_n is None, 'Can\'t set both. Use one or none.'
         self.obs = np.asarray(obs)
-        self.obs_perc = obs_perc
-        self.perc_use_all_data = perc_use_all_data
+        self.pseudo_obs_perc = pseudo_obs_perc
+        self.pesudo_obs_use_all_data = pesudo_obs_use_all_data
         self.kernel_bandwidth_perc = kernel_bandwidth_perc
         
-        if obs_perc is not None:
-            self.obs_computed = []
+        if pseudo_obs_perc is not None:
+            self.pseudo_obs = []
 
         if np.any(np.isnan(self.obs)):
             raise ValueError("Observed data contains NaNs")
@@ -129,11 +132,11 @@ class SNPE(BaseInference):
       
       tds: array
           Only needed when obs is computed as percentile of current samples.
-          Will then be used to compute the obs_perc percentile of the samples relative
+          Will then be used to compute the pseudo_obs_perc percentile of the samples relative
           to the true observed value. Should eventually converge to the true value.
       """
       
-      if self.obs_perc is None:
+      if self.pseudo_obs_perc is None and self.psuedo_obs_n is None:
         if isinstance(self.obs, np.ndarray):
             # Take fixed value.
             return self.obs
@@ -142,10 +145,15 @@ class SNPE(BaseInference):
             return self.obs[np.min([len(self.obs)-1, r-1])]
       else:
           assert isinstance(self.obs, np.ndarray)
-          # Take percentile of samples.
           abs_tds = np.abs(tds - self.obs)
-          obs = abs_tds[np.argsort(abs_tds.flatten())[int(np.round(self.obs_perc/100*abs_tds.shape[0]))]]
-          return np.reshape(obs, self.obs.shape)
+          if self.pseudo_obs_perc is not None:
+              # Take percentile of samples.
+              obs = abs_tds[np.argsort(abs_tds.flatten())[int(np.round(self.pseudo_obs_perc/100*abs_tds.shape[0]))]]
+              return np.reshape(obs, self.obs.shape)
+          elif self.psuedo_obs_n is not None:
+              # Take n-th best sample.
+              obs = abs_tds[np.argsort(abs_tds.flatten())[self.psuedo_obs_n]]
+              return np.reshape(obs, self.obs.shape)
         
     def run(self, n_train=100, n_rounds=2, epochs=100, minibatch=50,
             round_cl=1, stop_on_nan=False, proposal=None, text_verbose=True,
@@ -282,12 +290,12 @@ class SNPE(BaseInference):
             
             # Get training values.
             perc_tds = trn_data[1]
-            if self.perc_use_all_data:
+            if self.pesudo_obs_use_all_data:
                 perc_tds = np.concatenate([perc_tds] + [tds_i[1] for tds_i in trn_datasets])                
             
             # Get observed or pseudo-observed value.
             obs = self.get_obs(perc_tds)
-            if self.obs_perc is not None: self.obs_computed.append(obs)
+            if self.pseudo_obs_perc is not None: self.pseudo_obs.append(obs)
                 
             if self.verbose or text_verbose: print('Observed = ' + str(obs))
             
