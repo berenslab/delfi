@@ -6,8 +6,9 @@ from delfi.neuralnet.Trainer import Trainer
 from delfi.neuralnet.loss.regularizer import svi_kl_init, svi_kl_zero
 
 class SNPE(BaseInference):
-    def __init__(self, generator, obs=None, obs_perc=None, kernel_bandwidth_perc=None,
-                 obs_perc_use_all_data=False, prior_norm=False, pilot_samples=100,
+    def __init__(self, generator, obs=None, pseudo_obs_perc=None, pseudo_obs_n=None,
+                 kernel_bandwidth_perc=None, kernel_bandwidth_n=None,
+                 pseudo_obs_use_all_data=False, prior_norm=False, pilot_samples=100,
                  convert_to_T=3, reg_lambda=0.01, prior_mixin=0, kernel=None, seed=None, verbose=True,
                  **kwargs):
         """Sequential neural posterior estimation (SNPE)
@@ -20,13 +21,17 @@ class SNPE(BaseInference):
             Observation or list of of observations in the format the generator returns (1 x n_summary)
             If list, obs will be changed every round. In this case it should be converging to the true value.
             The different observed value can be used as guidance for the algorithm.
-            Alternatively, set obs_perc.
-        obs_perc : double in [0,100]
+            Alternatively, set pseudo_obs_perc.
+        pseudo_obs_perc : double in [0,100]
             If set, adaptively change obs relative to percentile of best samples.
             Set to zero to use best sample only.
+        pseudo_obs_n : integer in [1, np.inf]
+            If set, adaptively change obs. Set obs always to the n-th best sample.
         kernel_bandwidth_perc : double in [0,100]
             If set, adaptively change kernel bandwidth as percentile of best samples.
-        obs_perc_use_all_data : bool
+        kernel_bandwidth_n : integer in [1, np.inf]
+            If set, adaptively change kernel bandwidth relatively to the n-th best sample.
+        pseudo_obs_use_all_data : bool
             Set to True to use all training data to compute percentile obs.
             Default is False. Then only the samples of the current round are used.
         prior_norm : bool
@@ -68,13 +73,18 @@ class SNPE(BaseInference):
                          pilot_samples=pilot_samples, seed=seed,
                          verbose=verbose, **kwargs)
         assert obs is not None, 'SNPE needs obs'
-        self.obs = np.asarray(obs)
-        self.obs_perc = obs_perc
-        self.kernel_bandwidth_perc = kernel_bandwidth_perc
-        assert not obs_perc_use_all_data, 'Not implemented'
+        assert pseudo_obs_perc is None or pseudo_obs_n is None, 'Can\'t set both. Use one or none.'
+        assert kernel_bandwidth_perc is None or kernel_bandwidth_n is None, 'Can\'t set both. Use one or none.'
         
-        if obs_perc is not None:
-            self.obs_computed = []
+        self.obs = np.asarray(obs)
+        self.pseudo_obs_perc = pseudo_obs_perc
+        self.pseudo_obs_n = pseudo_obs_n
+        self.pseudo_obs_use_all_data = pseudo_obs_use_all_data
+        self.kernel_bandwidth_perc = kernel_bandwidth_perc
+        self.kernel_bandwidth_n = kernel_bandwidth_n
+        
+        if pseudo_obs_perc is not None or pseudo_obs_n is not None:
+            self.pseudo_obs = []
 
         if np.any(np.isnan(self.obs)):
             raise ValueError("Observed data contains NaNs")
@@ -129,11 +139,11 @@ class SNPE(BaseInference):
       
       tds: array
           Only needed when obs is computed as percentile of current samples.
-          Will then be used to compute the obs_perc percentile of the samples relative
+          Will then be used to compute the pseudo_obs_perc percentile of the samples relative
           to the true observed value. Should eventually converge to the true value.
       """
       
-      if self.obs_perc is None:
+      if self.pseudo_obs_perc is None and self.pseudo_obs_n is None:
         if isinstance(self.obs, np.ndarray):
             # Take fixed value.
             return self.obs
@@ -142,10 +152,15 @@ class SNPE(BaseInference):
             return self.obs[np.min([len(self.obs)-1, r-1])]
       else:
           assert isinstance(self.obs, np.ndarray)
-          # Take percentile of samples.
           abs_tds = np.abs(tds - self.obs)
-          obs = abs_tds[np.argsort(abs_tds.flatten())[int(np.round(self.obs_perc/100*abs_tds.shape[0]))]]
-          return np.reshape(obs, self.obs.shape)
+          if self.pseudo_obs_perc is not None:
+              # Take percentile of samples.
+              obs = abs_tds[np.argsort(abs_tds.flatten())[int(np.round(self.pseudo_obs_perc/100*abs_tds.shape[0]))]]
+              return np.reshape(obs, self.obs.shape)
+          elif self.pseudo_obs_n is not None:
+              # Take n-th best sample.
+              obs = abs_tds[np.argsort(abs_tds.flatten())[self.pseudo_obs_n]]
+              return np.reshape(obs, self.obs.shape)
         
     def run(self, n_train=100, n_rounds=2, epochs=100, minibatch=50,
             round_cl=1, stop_on_nan=False, proposal=None, text_verbose=True,
@@ -207,10 +222,16 @@ class SNPE(BaseInference):
 
         if load_trn_data or save_trn_data:
             assert init_trn_data_file is not None, 'If you want to load or save data, please state a file'
-        if append_trn_data:
-            assert load_trn_data, 'Can\'t append if loading is not set True'
+        if append_trn_data and not(load_trn_data):
+            print('Will not append since loading is not set to true.')
         
         for r in range(n_rounds):
+            # Define what to do this round.
+            # Load data only in first round, and only if flag is set.
+            r_load_data = (r==0) and load_trn_data
+            # Draw new samples in every round. Not in the first however if data was loaded and should not be appended.
+            generate_data = (r > 0) or not(load_trn_data) or append_trn_data
+        
             self.round += 1
             if text_verbose: print('Round: ' + str(r))
             
@@ -236,7 +257,7 @@ class SNPE(BaseInference):
                 self.generator.proposal = proposal
 
             # Loading trainind from previous trainings. Only samples from the prior distribution are loaded.
-            if r == 0 and load_trn_data:
+            if r_load_data:
                 with open(init_trn_data_file + '.pkl', 'rb') as f:
                     initial_trn_data = pickle.load(f)
                 assert initial_trn_data[0].shape[0] == initial_trn_data[1].shape[0], 'Number of samples must be the same'
@@ -245,14 +266,10 @@ class SNPE(BaseInference):
                 n_train_round = initial_trn_data[0].shape[0]
                 trn_data = initial_trn_data
                 if text_verbose: print('Used initial training data.')
-                if append_trn_data:
-                    old_trn_data = trn_data
-                else:
-                    old_trn_data = None
-                    
-            # Draw new samples if not in first round, or no data was loaded or if data should be appended.
-            generate_data = r > 0 or not(load_trn_data) or append_trn_data
-            
+                if append_trn_data: loaded_trn_data = trn_data
+                else:               loaded_trn_data = None
+
+            # Generate samples.
             if generate_data:            
                 if type(n_train) == list:
                     try:
@@ -278,21 +295,32 @@ class SNPE(BaseInference):
                 # normalize weights
                 iws /= np.mean(iws)
             
-            # Get observed values. (Might change every round)
-            obs = self.get_obs(trn_data[1])
-            if self.obs_perc is not None: self.obs_computed.append(obs)
+            # Get training values.
+            perc_tds = trn_data[1]
+            if self.pseudo_obs_use_all_data:
+                perc_tds = np.concatenate([perc_tds] + [tds_i[1] for tds_i in trn_datasets])                
+            
+            # Get observed or pseudo-observed value.
+            obs = self.get_obs(perc_tds)
+            if self.pseudo_obs_perc is not None or self.pseudo_obs_n:
+                self.pseudo_obs.append(obs)
                 
-            if self.verbose or text_verbose: print('New obs = ' + str(obs))
+            if self.verbose or text_verbose: print('Observed = ' + str(obs))
             
             # Continue generating data?
             if generate_data:
                 
                 if self.kernel is not None:
                     self.kernel.obs = obs # Update observed in kernel.
-                    if self.kernel_bandwidth_perc is not None:
-                        # Compute percentile.
-                        abs_tds = np.abs(trn_data[1] - self.obs)
-                        bandwidth_tot = abs_tds[np.argsort(abs_tds.flatten())[int(np.round(self.kernel_bandwidth_perc/100*abs_tds.shape[0]))]]
+                    if self.kernel_bandwidth_perc is not None or self.kernel_bandwidth_n is not None:
+                        abs_tds = np.abs(perc_tds - self.obs)
+                        if self.kernel_bandwidth_perc is not None:
+                            # Compute percentile.
+                            bandwidth_tot = abs_tds[np.argsort(abs_tds.flatten())[int(np.round(self.kernel_bandwidth_perc/100*abs_tds.shape[0]))]]
+                        elif self.kernel_bandwidth_n is not None:
+                            # Compute n-th best sample.
+                            bandwidth_tot = abs_tds[np.argsort(abs_tds.flatten())[self.kernel_bandwidth_n]]
+                        
                         # Subtract current obs value.
                         bandwidth_rel = bandwidth_tot - obs
                         if self.verbose or text_verbose: print('New bandwidth = ' + str(bandwidth_rel))
@@ -304,9 +332,9 @@ class SNPE(BaseInference):
 
                 # Given data should be appended, combine old trn_data and new trn_data.
                 if append_trn_data:
-                    trn_data = (np.concatenate((old_trn_data[0], trn_data[0])),
-                                np.concatenate((old_trn_data[1], trn_data[1])),
-                                np.concatenate((old_trn_data[2], trn_data[2]))) 
+                    trn_data = (np.concatenate((loaded_trn_data[0], trn_data[0])),
+                                np.concatenate((loaded_trn_data[1], trn_data[1])),
+                                np.concatenate((loaded_trn_data[2], trn_data[2]))) 
                     n_train_round = trn_data[0].shape[0]
 
                 # Save data sampled from prior for future use.
