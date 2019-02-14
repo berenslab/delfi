@@ -7,7 +7,7 @@ from delfi.neuralnet.loss.regularizer import svi_kl_init, svi_kl_zero
 
 class SNPE(BaseInference):
     def __init__(self, generator, obs=None, obs_perc=None, kernel_bandwidth_perc=None,
-                 obs_perc_use_all_data=False, prior_norm=False, pilot_samples=100,
+                 perc_use_all_data=False, prior_norm=False, pilot_samples=100,
                  convert_to_T=3, reg_lambda=0.01, prior_mixin=0, kernel=None, seed=None, verbose=True,
                  **kwargs):
         """Sequential neural posterior estimation (SNPE)
@@ -26,7 +26,7 @@ class SNPE(BaseInference):
             Set to zero to use best sample only.
         kernel_bandwidth_perc : double in [0,100]
             If set, adaptively change kernel bandwidth as percentile of best samples.
-        obs_perc_use_all_data : bool
+        perc_use_all_data : bool
             Set to True to use all training data to compute percentile obs.
             Default is False. Then only the samples of the current round are used.
         prior_norm : bool
@@ -71,7 +71,7 @@ class SNPE(BaseInference):
         self.obs = np.asarray(obs)
         self.obs_perc = obs_perc
         self.kernel_bandwidth_perc = kernel_bandwidth_perc
-        assert not obs_perc_use_all_data, 'Not implemented'
+        assert not perc_use_all_data, 'Not implemented'
         
         if obs_perc is not None:
             self.obs_computed = []
@@ -207,10 +207,16 @@ class SNPE(BaseInference):
 
         if load_trn_data or save_trn_data:
             assert init_trn_data_file is not None, 'If you want to load or save data, please state a file'
-        if append_trn_data:
-            assert load_trn_data, 'Can\'t append if loading is not set True'
+        if append_trn_data and not(load_trn_data):
+            print('Will not append since loading is not set to true.')
         
         for r in range(n_rounds):
+            # Define what to do this round.
+            # Load data only in first round, and only if flag is set.
+            r_load_data = (r==0) and load_trn_data
+            # Draw new samples in every round. Not in the first however if data was loaded and should not be appended.
+            generate_data = (r > 0) or not(load_trn_data) or append_trn_data
+        
             self.round += 1
             if text_verbose: print('Round: ' + str(r))
             
@@ -236,7 +242,7 @@ class SNPE(BaseInference):
                 self.generator.proposal = proposal
 
             # Loading trainind from previous trainings. Only samples from the prior distribution are loaded.
-            if r == 0 and load_trn_data:
+            if r_load_data:
                 with open(init_trn_data_file + '.pkl', 'rb') as f:
                     initial_trn_data = pickle.load(f)
                 assert initial_trn_data[0].shape[0] == initial_trn_data[1].shape[0], 'Number of samples must be the same'
@@ -245,14 +251,9 @@ class SNPE(BaseInference):
                 n_train_round = initial_trn_data[0].shape[0]
                 trn_data = initial_trn_data
                 if text_verbose: print('Used initial training data.')
-                if append_trn_data:
-                    old_trn_data = trn_data
-                else:
-                    old_trn_data = None
-                    
-            # Draw new samples if not in first round, or no data was loaded or if data should be appended.
-            generate_data = r > 0 or not(load_trn_data) or append_trn_data
-            
+                if append_trn_data: loaded_trn_data = trn_data
+                else:               loaded_trn_data = None
+
             if generate_data:            
                 if type(n_train) == list:
                     try:
@@ -304,9 +305,9 @@ class SNPE(BaseInference):
 
                 # Given data should be appended, combine old trn_data and new trn_data.
                 if append_trn_data:
-                    trn_data = (np.concatenate((old_trn_data[0], trn_data[0])),
-                                np.concatenate((old_trn_data[1], trn_data[1])),
-                                np.concatenate((old_trn_data[2], trn_data[2]))) 
+                    trn_data = (np.concatenate((loaded_trn_data[0], trn_data[0])),
+                                np.concatenate((loaded_trn_data[1], trn_data[1])),
+                                np.concatenate((loaded_trn_data[2], trn_data[2]))) 
                     n_train_round = trn_data[0].shape[0]
 
                 # Save data sampled from prior for future use.
