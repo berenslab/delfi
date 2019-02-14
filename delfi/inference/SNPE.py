@@ -71,7 +71,6 @@ class SNPE(BaseInference):
         self.obs = np.asarray(obs)
         self.obs_perc = obs_perc
         self.kernel_bandwidth_perc = kernel_bandwidth_perc
-        assert not perc_use_all_data, 'Not implemented'
         
         if obs_perc is not None:
             self.obs_computed = []
