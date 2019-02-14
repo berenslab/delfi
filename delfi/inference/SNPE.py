@@ -6,7 +6,8 @@ from delfi.neuralnet.Trainer import Trainer
 from delfi.neuralnet.loss.regularizer import svi_kl_init, svi_kl_zero
 
 class SNPE(BaseInference):
-    def __init__(self, generator, obs=None, obs_perc=None, obs_perc_use_all_data=False, prior_norm=False, pilot_samples=100,
+    def __init__(self, generator, obs=None, obs_perc=None, kernel_bandwidth_perc=None,
+                 obs_perc_use_all_data=False, prior_norm=False, pilot_samples=100,
                  convert_to_T=3, reg_lambda=0.01, prior_mixin=0, kernel=None, seed=None, verbose=True,
                  **kwargs):
         """Sequential neural posterior estimation (SNPE)
@@ -23,6 +24,8 @@ class SNPE(BaseInference):
         obs_perc : double in [0,100]
             If set, adaptively change obs relative to percentile of best samples.
             Set to zero to use best sample only.
+        kernel_bandwidth_perc : double in [0,100]
+            If set, adaptively change kernel bandwidth as percentile of best samples.
         obs_perc_use_all_data : bool
             Set to True to use all training data to compute percentile obs.
             Default is False. Then only the samples of the current round are used.
@@ -67,6 +70,7 @@ class SNPE(BaseInference):
         assert obs is not None, 'SNPE needs obs'
         self.obs = np.asarray(obs)
         self.obs_perc = obs_perc
+        self.kernel_bandwidth_perc = kernel_bandwidth_perc
         assert not obs_perc_use_all_data, 'Not implemented'
         
         if obs_perc is not None:
@@ -139,8 +143,8 @@ class SNPE(BaseInference):
       else:
           assert isinstance(self.obs, np.ndarray)
           # Take percentile of samples.
-          tds = np.abs(tds - self.obs)
-          obs = tds[np.argsort(tds.flatten())[int(np.round(self.obs_perc/100*tds.shape[0]))]]
+          abs_tds = np.abs(tds - self.obs)
+          obs = abs_tds[np.argsort(abs_tds.flatten())[int(np.round(self.obs_perc/100*abs_tds.shape[0]))]]
           return np.reshape(obs, self.obs.shape)
         
     def run(self, n_train=100, n_rounds=2, epochs=100, minibatch=50,
@@ -276,8 +280,7 @@ class SNPE(BaseInference):
             
             # Get observed values. (Might change every round)
             obs = self.get_obs(trn_data[1])
-            if self.obs_perc is not None:
-                self.obs_computed.append(obs)
+            if self.obs_perc is not None: self.obs_computed.append(obs)
                 
             if self.verbose or text_verbose: print('New obs = ' + str(obs))
             
@@ -286,6 +289,14 @@ class SNPE(BaseInference):
                 
                 if self.kernel is not None:
                     self.kernel.obs = obs # Update observed in kernel.
+                    if self.kernel_bandwidth_perc is not None:
+                        # Compute percentile.
+                        abs_tds = np.abs(trn_data[1] - self.obs)
+                        bandwidth_tot = abs_tds[np.argsort(abs_tds.flatten())[int(np.round(self.kernel_bandwidth_perc/100*abs_tds.shape[0]))]]
+                        # Subtract current obs value.
+                        bandwidth_rel = bandwidth_tot - obs
+                        self.kernel.set_bandwidth(bandwidth_rel)
+                        
                     iws *= self.kernel.eval(trn_data[1].reshape(n_train_round, -1))
 
                 trn_data = (trn_data[0], trn_data[1], iws)
