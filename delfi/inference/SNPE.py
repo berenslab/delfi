@@ -254,6 +254,7 @@ class SNPE(BaseInference):
                 if append_trn_data: loaded_trn_data = trn_data
                 else:               loaded_trn_data = None
 
+            # Generate samples.
             if generate_data:            
                 if type(n_train) == list:
                     try:
@@ -279,8 +280,13 @@ class SNPE(BaseInference):
                 # normalize weights
                 iws /= np.mean(iws)
             
-            # Get observed values. (Might change every round)
-            obs = self.get_obs(trn_data[1])
+            # Get training values.
+            perc_tds = trn_data[1]
+            if self.perc_use_all_data:
+                perc_tds = np.concatenate([perc_tds] + [tds_i[1] for tds_i in trn_datasets])                
+            
+            # Get observed or pseudo-observed value.
+            obs = self.get_obs(perc_tds)
             if self.obs_perc is not None: self.obs_computed.append(obs)
                 
             if self.verbose or text_verbose: print('New obs = ' + str(obs))
@@ -292,7 +298,7 @@ class SNPE(BaseInference):
                     self.kernel.obs = obs # Update observed in kernel.
                     if self.kernel_bandwidth_perc is not None:
                         # Compute percentile.
-                        abs_tds = np.abs(trn_data[1] - self.obs)
+                        abs_tds = np.abs(perc_tds - self.obs)
                         bandwidth_tot = abs_tds[np.argsort(abs_tds.flatten())[int(np.round(self.kernel_bandwidth_perc/100*abs_tds.shape[0]))]]
                         # Subtract current obs value.
                         bandwidth_rel = bandwidth_tot - obs
