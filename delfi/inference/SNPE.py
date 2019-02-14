@@ -70,6 +70,7 @@ class SNPE(BaseInference):
         assert obs is not None, 'SNPE needs obs'
         self.obs = np.asarray(obs)
         self.obs_perc = obs_perc
+        self.perc_use_all_data = perc_use_all_data
         self.kernel_bandwidth_perc = kernel_bandwidth_perc
         
         if obs_perc is not None:
