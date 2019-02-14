@@ -36,19 +36,29 @@ class BaseKernel(metaclass=ABCMetaDoc):
 
         self.dim = obs.shape[1]
         self.obs = obs
-        self.bandwidth = bandwidth
         self.spherical = spherical
         self.atleast = atleast
 
-        self.H = bandwidth * np.eye(self.dim)
-        self.invH = np.linalg.inv(self.H)
-        self.detH = np.linalg.det(self.H)
+        self.set_bandwidth(bandwidth)
 
         self.normalizer = 1. / self.kernel(0.)
 
     @abc.abstractmethod
     def kernel(u):
         pass
+        
+    def set_bandwidth(self, bandwidth):
+        """ Set bandwith
+        
+        Parameters
+        ----------
+        bandwidth : float
+            bandwidth of kernel (isotropic)
+        """
+        self.bandwidth = bandwidth
+        self.H = bandwidth * np.eye(self.dim)
+        self.invH = np.linalg.inv(self.H)
+        self.detH = np.linalg.det(self.H)
 
     def eval(self, x):
         """Kernel for loss calibration
