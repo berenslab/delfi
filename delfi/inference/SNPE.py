@@ -81,10 +81,12 @@ class SNPE(BaseInference):
         self.pseudo_obs_n = pseudo_obs_n
         self.pseudo_obs_use_all_data = pseudo_obs_use_all_data
         self.kernel_bandwidth_perc = kernel_bandwidth_perc
-        self.kernel_bandwidth_n = kernel_bandwidth_n
+        self.kernel_bandwidth_perc = kernel_bandwidth_n
         
         if pseudo_obs_perc is not None or pseudo_obs_n is not None:
             self.pseudo_obs = []
+        if kernel_bandwidth_perc is not None or kernel_bandwidth_n is not None:
+            self.kernel_bandwidth = []
 
         if np.any(np.isnan(self.obs)):
             raise ValueError("Observed data contains NaNs")
@@ -325,6 +327,7 @@ class SNPE(BaseInference):
                         bandwidth_rel = bandwidth_tot - obs
                         if self.verbose or text_verbose: print('New bandwidth = ' + str(bandwidth_rel))
                         self.kernel.set_bandwidth(bandwidth_rel)
+                        self.kernel_bandwidth.append(bandwidth_rel)
                         
                     iws *= self.kernel.eval(trn_data[1].reshape(n_train_round, -1))
 
