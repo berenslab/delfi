@@ -81,7 +81,7 @@ class SNPE(BaseInference):
         self.pseudo_obs_n = pseudo_obs_n
         self.pseudo_obs_use_all_data = pseudo_obs_use_all_data
         self.kernel_bandwidth_perc = kernel_bandwidth_perc
-        self.kernel_bandwidth_perc = kernel_bandwidth_n
+        self.kernel_bandwidth_n = kernel_bandwidth_n
         
         if pseudo_obs_perc is not None or pseudo_obs_n is not None:
             self.pseudo_obs = []
