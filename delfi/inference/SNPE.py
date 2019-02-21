@@ -1,5 +1,6 @@
 import numpy as np
 import pickle
+import time
 
 from delfi.inference.BaseInference import BaseInference
 from delfi.neuralnet.Trainer import Trainer
@@ -7,7 +8,7 @@ from delfi.neuralnet.loss.regularizer import svi_kl_init, svi_kl_zero
 
 class SNPE(BaseInference):
     def __init__(self, generator, obs=None, pseudo_obs_perc=None, pseudo_obs_n=None,
-                 kernel_bandwidth_perc=None, kernel_bandwidth_n=None,
+                 kernel_bandwidth_perc=None, kernel_bandwidth_n=None, kernel_bandwidth_min=None,
                  pseudo_obs_use_all_data=False, prior_norm=False, pilot_samples=100,
                  convert_to_T=3, reg_lambda=0.01, prior_mixin=0, kernel=None, seed=None, verbose=True,
                  **kwargs):
@@ -31,6 +32,8 @@ class SNPE(BaseInference):
             If set, adaptively change kernel bandwidth as percentile of best samples.
         kernel_bandwidth_n : integer in [1, np.inf]
             If set, adaptively change kernel bandwidth relatively to the n-th best sample.
+        kernel_bandwidth_min : double > 0
+            If set, bandwidth will always be at least this size.
         pseudo_obs_use_all_data : bool
             Set to True to use all training data to compute percentile obs.
             Default is False. Then only the samples of the current round are used.
@@ -82,6 +85,7 @@ class SNPE(BaseInference):
         self.pseudo_obs_use_all_data = pseudo_obs_use_all_data
         self.kernel_bandwidth_perc = kernel_bandwidth_perc
         self.kernel_bandwidth_n = kernel_bandwidth_n
+        self.kernel_bandwidth_min = kernel_bandwidth_min
         
         if pseudo_obs_perc is not None or pseudo_obs_n is not None:
             self.pseudo_obs = []
@@ -228,15 +232,21 @@ class SNPE(BaseInference):
             print('Will not append since loading is not set to true.')
         
         for r in range(n_rounds):
+            
+            # Update round.
+            self.round += 1
+            if text_verbose: print('Round: ' + str(r+1) + ' of ' + str(n_rounds) + '. \t Network training round: ' + str(self.round))
+            
             # Define what to do this round.
             # Load data only in first round, and only if flag is set.
-            r_load_data = (r==0) and load_trn_data
+            r_load_data = (self.round==1) and load_trn_data
+            # Append data only in first round, and only if flag is set.
+            r_append_data = r_load_data and append_trn_data
+            # Save data only in first round, and only if flag is set.
+            r_save_data = (self.round==1) and save_trn_data
             # Draw new samples in every round. Not in the first however if data was loaded and should not be appended.
-            generate_data = (r > 0) or not(load_trn_data) or append_trn_data
+            r_generate_data = (self.round > 1) or not(load_trn_data) or append_trn_data
         
-            self.round += 1
-            if text_verbose: print('Round: ' + str(r))
-            
             # draw training data (z-transformed params and stats)
             verbose = '(round {}) '.format(self.round) if self.verbose else False
             
@@ -258,44 +268,61 @@ class SNPE(BaseInference):
 
                 self.generator.proposal = proposal
 
-            # Loading trainind from previous trainings. Only samples from the prior distribution are loaded.
+            # Loading training from previous trainings. Only samples from the prior distribution are loaded.
             if r_load_data:
                 with open(init_trn_data_file + '.pkl', 'rb') as f:
-                    initial_trn_data = pickle.load(f)
-                assert initial_trn_data[0].shape[0] == initial_trn_data[1].shape[0], 'Number of samples must be the same'
-                assert initial_trn_data[0].shape[0] == initial_trn_data[2].size, 'Number of samples must be the same'
+                    loaded_trn_data = pickle.load(f)
+                assert loaded_trn_data[0].shape[0] == loaded_trn_data[1].shape[0], 'Number of samples must be the same'
+                if text_verbose: print('\t Loaded ' + str(loaded_trn_data[0].shape[0]) + ' samples.')
+                
+                # If not data will be generated this round, make loaded data the only data.
+                if not(r_append_data):
+                  trn_data = loaded_trn_data
 
-                n_train_round = initial_trn_data[0].shape[0]
-                trn_data = initial_trn_data
-                if text_verbose: print('Used initial training data.')
-                if append_trn_data: loaded_trn_data = trn_data
-                else:               loaded_trn_data = None
-
-            # Generate samples.
-            if generate_data:            
+            # Generate samples. Either because no data was loaded this round, or because data will be appended.
+            if r_generate_data: 
+                # Get number of samples to generate.
                 if type(n_train) == list:
                     try:
                         n_train_round = n_train[self.round-1]
                     except:
                         n_train_round = n_train[-1]
                 else:
-                    n_train_round = n_train       
-          
-                if text_verbose: print('\t Sampling ' + str(n_train_round) + ' samples')
+                    n_train_round = n_train
+                
+                if text_verbose:
+                  t0 = time.time()
+                  print('\t Sampling ' + str(n_train_round) + ' samples ... ', end ='')
+                # Generate samples.
                 trn_data = self.gen(n_train_round, prior_mixin=self.prior_mixin, verbose=verbose, from_prior=(r==0))
-                n_train_round = trn_data[0].shape[0]
+                if text_verbose:
+                  print('Done after {:.4g} min'.format((time.time()-t0)/60))
+                
+            # Append generated prior samples to loaded prior samples. 
+            if r_append_data:
+                trn_data = (np.concatenate((loaded_trn_data[0], trn_data[0])),
+                            np.concatenate((loaded_trn_data[1], trn_data[1])))
+            
+            # Update number of samples.
+            n_train_round = trn_data[0].shape[0]
+            if text_verbose: print('\t Total number of samples: ' + str(n_train_round))
+            
+            # Save data sampled from prior for future use.
+            if r_save_data:
+                if text_verbose: print('\t Saving ' + str(n_train_round) + ' samples to ' + init_trn_data_file)
+                with open(init_trn_data_file + '.pkl', 'wb') as f:
+                    pickle.dump(trn_data, f, pickle.HIGHEST_PROTOCOL)
 
-                # precompute importance weights
-                if self.generator.proposal is not None:
-                    params = self.params_std * trn_data[0] + self.params_mean
-                    p_prior = self.generator.prior.eval(params, log=False)
-                    p_proposal = self.generator.proposal.eval(params, log=False)
-                    iws = p_prior / (self.prior_mixin * p_prior + (1 - self.prior_mixin) * p_proposal)
-                else:
-                    iws = np.ones((n_train_round,))
-
-                # normalize weights
-                iws /= np.mean(iws)
+            # Precompute importance weights
+            if self.generator.proposal is not None:
+                params = self.params_std * trn_data[0] + self.params_mean
+                p_prior = self.generator.prior.eval(params, log=False)
+                p_proposal = self.generator.proposal.eval(params, log=False)
+                iws = p_prior / (self.prior_mixin * p_prior + (1 - self.prior_mixin) * p_proposal)
+            else:
+                iws = np.ones((n_train_round,))
+            # normalize weights
+            iws /= np.mean(iws)
             
             # Get training values.
             perc_tds = trn_data[1]
@@ -307,45 +334,47 @@ class SNPE(BaseInference):
             if self.pseudo_obs_perc is not None or self.pseudo_obs_n:
                 self.pseudo_obs.append(obs)
                 
-            if self.verbose or text_verbose: print('Observed = ' + str(obs))
+            if self.verbose or text_verbose: print('\t Observed = ' + str(obs))
             
-            # Continue generating data?
-            if generate_data:
+            # Update importance weights based on kernel.
+            if self.kernel is not None:
+                # Update observed in kernel.
+                self.kernel.obs = obs
                 
-                if self.kernel is not None:
-                    self.kernel.obs = obs # Update observed in kernel.
-                    if self.kernel_bandwidth_perc is not None or self.kernel_bandwidth_n is not None:
-                        abs_tds = np.abs(perc_tds - self.obs)
-                        if self.kernel_bandwidth_perc is not None:
-                            # Compute percentile.
-                            bandwidth_tot = abs_tds[np.argsort(abs_tds.flatten())[int(np.round(self.kernel_bandwidth_perc/100*abs_tds.shape[0]))]]
-                        elif self.kernel_bandwidth_n is not None:
-                            # Compute n-th best sample.
-                            bandwidth_tot = abs_tds[np.argsort(abs_tds.flatten())[self.kernel_bandwidth_n]]
-                        
-                        # Subtract current obs value.
-                        bandwidth_rel = bandwidth_tot - obs
-                        if self.verbose or text_verbose: print('New bandwidth = ' + str(bandwidth_rel))
-                        self.kernel.set_bandwidth(bandwidth_rel)
-                        self.kernel_bandwidth.append(bandwidth_rel)
-                        
-                    iws *= self.kernel.eval(trn_data[1].reshape(n_train_round, -1))
+                # Update bandwidth of kernel.
+                if self.kernel_bandwidth_perc is not None or self.kernel_bandwidth_n is not None:
+                    abs_tds = np.abs(perc_tds - self.obs)
+                    if self.kernel_bandwidth_perc is not None:
+                        # Compute percentile.
+                        bandwidth_tot = abs_tds[np.argsort(abs_tds.flatten())[int(np.round(self.kernel_bandwidth_perc/100*abs_tds.shape[0]))]]
+                    elif self.kernel_bandwidth_n is not None:
+                        # Compute n-th best sample.
+                        bandwidth_tot = abs_tds[np.argsort(abs_tds.flatten())[self.kernel_bandwidth_n]]
+                    
+                    # Subtract current obs value.
+                    bandwidth_rel = bandwidth_tot - obs
+                    if self.kernel_bandwidth_min is not None:
+                      if bandwidth_rel < self.kernel_bandwidth_min:
+                        print('!!! Computed bandwidth was {:.2g} which is smaller than the minimum value {:.2g}. Use the latter as bandwidth.'.format(bandwidth_rel, self.kernel_bandwidth_min))
+                        bandwidth_rel = self.kernel_bandwidth_min
+                    assert bandwidth_rel > 0, 'Bandwidth is smaller than 0. Use different bandwidth parameter or set kernel_bandwidth_min.'
+                    # Print bandwidth.
+                    if self.verbose or text_verbose: print('\t New bandwidth = ' + str(bandwidth_rel))
+                    # Set and save bandwidth.
+                    self.kernel.set_bandwidth(bandwidth_rel)
+                    self.kernel_bandwidth.append(bandwidth_rel)
+                
+                # Compute importance weights with kernel.    
+                iws *= self.kernel.eval(trn_data[1].reshape(n_train_round, -1))
+            
+            # Add importance weights to data.
+            trn_data = (trn_data[0], trn_data[1], iws)
 
-                trn_data = (trn_data[0], trn_data[1], iws)
-
-                # Given data should be appended, combine old trn_data and new trn_data.
-                if append_trn_data:
-                    trn_data = (np.concatenate((loaded_trn_data[0], trn_data[0])),
-                                np.concatenate((loaded_trn_data[1], trn_data[1])),
-                                np.concatenate((loaded_trn_data[2], trn_data[2]))) 
-                    n_train_round = trn_data[0].shape[0]
-
-                # Save data sampled from prior for future use.
-                if r == 0 and save_trn_data:
-                    with open(init_trn_data_file + '.pkl', 'wb') as f:
-                        pickle.dump(trn_data, f, pickle.HIGHEST_PROTOCOL)
-
-            if text_verbose: print('\t Training network ... ', end='')
+            if text_verbose:
+                t0 = time.time()
+                print('\t Training network ... ', end ='')
+            
+            # Train network.
             trn_inputs = [self.network.params, self.network.stats,
                           self.network.iws]
 
@@ -355,11 +384,14 @@ class SNPE(BaseInference):
                         seed=self.gen_newseed(),
                         monitor=self.monitor_dict_from_names(monitor),
                         **kwargs)
+    
             logs.append(t.train(epochs=epochs, minibatch=minibatch,
                                 verbose=verbose, stop_on_nan=stop_on_nan))
 
+            if text_verbose:
+                print('Done after {:.4g} min'.format((time.time()-t0)/60))     
+                                
             trn_datasets.append(trn_data)
-            if text_verbose: print('Done!')
             
             try:
                 posteriors.append(self.predict(obs))
