@@ -165,7 +165,7 @@ class SNPE(BaseInference):
               return np.reshape(obs, self.obs.shape)
           elif self.pseudo_obs_n is not None:
               # Take n-th best sample.
-              obs = abs_tds[np.argsort(abs_tds.flatten())[self.pseudo_obs_n]]
+              obs = abs_tds[np.argsort(abs_tds.flatten())[self.pseudo_obs_n-1]]
               return np.reshape(obs, self.obs.shape)
         
     def run(self, n_train=100, n_rounds=2, epochs=100, minibatch=50,
