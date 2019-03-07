@@ -294,7 +294,7 @@ class SNPE(BaseInference):
                   t0 = time.time()
                   print('\t Sampling ' + str(n_train_round) + ' samples ... ', end ='')
                 # Generate samples.
-                trn_data = self.gen(n_train_round, prior_mixin=self.prior_mixin, verbose=verbose, from_prior=(r==0))
+                trn_data = self.gen(n_train_round, prior_mixin=self.prior_mixin, verbose=verbose, from_prior=(self.round==1))
                 if text_verbose:
                   print('Done after {:.4g} min'.format((time.time()-t0)/60))
                 
@@ -333,8 +333,6 @@ class SNPE(BaseInference):
             obs = self.get_obs(perc_tds)
             if self.pseudo_obs_perc is not None or self.pseudo_obs_n:
                 self.pseudo_obs.append(obs)
-                
-            if self.verbose or text_verbose: print('\t Observed = ' + str(obs))
             
             # Update importance weights based on kernel.
             if self.kernel is not None:
@@ -352,14 +350,12 @@ class SNPE(BaseInference):
                         bandwidth_tot = abs_tds[np.argsort(abs_tds.flatten())[self.kernel_bandwidth_n]]
                     
                     # Subtract current obs value.
-                    bandwidth_rel = bandwidth_tot - obs
+                    bandwidth_rel = float(bandwidth_tot - obs)
                     if self.kernel_bandwidth_min is not None:
                       if bandwidth_rel < self.kernel_bandwidth_min:
-                        print('!!! Computed bandwidth was {:.2g} which is smaller than the minimum value {:.2g}. Use the latter as bandwidth.'.format(bandwidth_rel, self.kernel_bandwidth_min))
+                        print('\t Computed bandwidth was {:.2g} which is smaller than the minimum value {:.2g}.'.format(bandwidth_rel, self.kernel_bandwidth_min))
                         bandwidth_rel = self.kernel_bandwidth_min
                     assert bandwidth_rel > 0, 'Bandwidth is smaller than 0. Use different bandwidth parameter or set kernel_bandwidth_min.'
-                    # Print bandwidth.
-                    if self.verbose or text_verbose: print('\t New bandwidth = ' + str(bandwidth_rel))
                     # Set and save bandwidth.
                     self.kernel.set_bandwidth(bandwidth_rel)
                     self.kernel_bandwidth.append(bandwidth_rel)
@@ -372,7 +368,7 @@ class SNPE(BaseInference):
 
             if text_verbose:
                 t0 = time.time()
-                print('\t Training network ... ', end ='')
+                print('\t Training network with observed = {:.2g} and bw = {:.2g} ... '.format(float(obs), self.kernel.bandwidth), end ='')
             
             # Train network.
             trn_inputs = [self.network.params, self.network.stats,
@@ -389,7 +385,7 @@ class SNPE(BaseInference):
                                 verbose=verbose, stop_on_nan=stop_on_nan))
 
             if text_verbose:
-                print('Done after {:.4g} min'.format((time.time()-t0)/60))     
+                print('Done after {:.4g} min'.format((time.time()-t0)/60))
                                 
             trn_datasets.append(trn_data)
             

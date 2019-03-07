@@ -9,6 +9,9 @@ class Gauss(BaseKernel):
         return 1/np.sqrt(2*np.pi)*np.exp(-0.5*u**2)
         
 class HalfGauss(BaseKernel):
+    def __init__(self, obs, bandwidth=1., atleast=None):
+      super().__init__(obs, bandwidth=bandwidth, spherical=False, atleast=atleast)
+
     @staticmethod
     def kernel(u):
         if u <= 0.0 :

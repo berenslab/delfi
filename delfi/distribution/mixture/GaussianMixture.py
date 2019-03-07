@@ -223,25 +223,3 @@ class MoG(BaseMixture):
         """Z-transform inverse"""
         xs = [x.ztrans_inv(mean, std) for x in self.xs]
         return MoG(self.a, xs=xs, seed=self.seed)
-
-    def eval_marginal(self, x, dims, log=True):
-        dims = np.atleast_1d(np.asarray(dims))
-        assert x.shape[1] == dims.size, 'second dimension of x must be equal to number of dimensions'
-    
-        marginal_m_list = [np.array([self.xs[comp].m[dim] for dim in dims]) for comp in range(self.n_components)]
-
-        marginal_S_list = []
-        for comp in range(self.n_components):
-            marginal_S = np.zeros((len(dims), len(dims)))
-            for idx1, dim1 in enumerate(dims):
-                for idx2, dim2 in enumerate(dims):
-                    marginal_S[idx1, idx2] = self.xs[comp].S[dim1,dim2]
-            marginal_S_list.append(marginal_S)
-    
-        marginal_dist_list = [Gaussian(m=marginal_m_list[comp], S=marginal_S_list[comp]) for comp in range(self.n_components)]
-    
-        #return marginal_dist
-        p = np.zeros(x.shape[0])
-        for i, xi in enumerate(x):
-            p[i] = sum([self.a[comp] * marginal_dist_list[comp].eval(np.atleast_2d(xi), log=log) for comp in range(self.n_components)])
-        return p
