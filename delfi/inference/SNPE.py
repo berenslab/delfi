@@ -347,7 +347,7 @@ class SNPE(BaseInference):
                         bandwidth_tot = abs_tds[np.argsort(abs_tds.flatten())[int(np.round(self.kernel_bandwidth_perc/100*abs_tds.shape[0]))]]
                     elif self.kernel_bandwidth_n is not None:
                         # Compute n-th best sample.
-                        bandwidth_tot = abs_tds[np.argsort(abs_tds.flatten())[self.kernel_bandwidth_n]]
+                        bandwidth_tot = abs_tds[np.argsort(abs_tds.flatten())[self.kernel_bandwidth_n-1]]
                     
                     # Subtract current obs value.
                     bandwidth_rel = float(bandwidth_tot - obs)
