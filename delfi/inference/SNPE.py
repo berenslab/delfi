@@ -86,11 +86,8 @@ class SNPE(BaseInference):
         self.kernel_bandwidth_perc = kernel_bandwidth_perc
         self.kernel_bandwidth_n = kernel_bandwidth_n
         self.kernel_bandwidth_min = kernel_bandwidth_min
-        
-        if pseudo_obs_perc is not None or pseudo_obs_n is not None:
-            self.pseudo_obs = []
-        if kernel_bandwidth_perc is not None or kernel_bandwidth_n is not None:
-            self.kernel_bandwidth = []
+        self.pseudo_obs = []
+        self.kernel_bandwidth = []
 
         if np.any(np.isnan(self.obs)):
             raise ValueError("Observed data contains NaNs")
@@ -171,7 +168,7 @@ class SNPE(BaseInference):
     def run(self, n_train=100, n_rounds=2, epochs=100, minibatch=50,
             round_cl=1, stop_on_nan=False, proposal=None, text_verbose=True,
             monitor=None, load_trn_data=False, save_trn_data=False, append_trn_data=False,
-            init_trn_data_file=None, verbose=False, **kwargs):
+            init_tds_file=None, verbose=False, **kwargs):
 
         """Run algorithm
 
@@ -206,7 +203,7 @@ class SNPE(BaseInference):
             If True, save tds to specified file
         append_trn_data: bool
             if True draws n_train new trainingsdata and appends it to the loaded tds
-        init_trn_data_file: None or filepath
+        init_tds_file: None or filepath
             if filepath loads/saves the trainingsdata of this file
 
 
@@ -227,7 +224,7 @@ class SNPE(BaseInference):
         posteriors = []
 
         if load_trn_data or save_trn_data:
-            assert init_trn_data_file is not None, 'If you want to load or save data, please state a file'
+            assert init_tds_file is not None, 'If you want to load or save data, please state a file'
         if append_trn_data and not(load_trn_data):
             print('Will not append since loading is not set to true.')
         
@@ -235,7 +232,7 @@ class SNPE(BaseInference):
             
             # Update round.
             self.round += 1
-            if text_verbose: print('Round: ' + str(r+1) + ' of ' + str(n_rounds) + '. \t Network training round: ' + str(self.round))
+            if text_verbose: print('\tRound: ' + str(r+1) + ' of ' + str(n_rounds) + '. \t Network training round: ' + str(self.round))
             
             # Define what to do this round.
             # Load data only in first round, and only if flag is set.
@@ -270,10 +267,11 @@ class SNPE(BaseInference):
 
             # Loading training from previous trainings. Only samples from the prior distribution are loaded.
             if r_load_data:
-                with open(init_trn_data_file + '.pkl', 'rb') as f:
+                with open(init_tds_file + '.pkl', 'rb') as f:
                     loaded_trn_data = pickle.load(f)
+                if isinstance(loaded_trn_data, list): loaded_trn_data = loaded_trn_data[0] # Take only first samples from prior.
                 assert loaded_trn_data[0].shape[0] == loaded_trn_data[1].shape[0], 'Number of samples must be the same'
-                if text_verbose: print('\t Loaded ' + str(loaded_trn_data[0].shape[0]) + ' samples.')
+                if text_verbose: print('\tLoaded ' + str(loaded_trn_data[0].shape[0]) + ' samples from ' + init_tds_file + '.pkl')
                 
                 # If not data will be generated this round, make loaded data the only data.
                 if not(r_append_data):
@@ -292,11 +290,11 @@ class SNPE(BaseInference):
                 
                 if text_verbose:
                   t0 = time.time()
-                  print('\t Sampling ' + str(n_train_round) + ' samples ... ', end ='')
+                  print('\tSampling ' + str(n_train_round) + ' samples ... ')
                 # Generate samples.
-                trn_data = self.gen(n_train_round, prior_mixin=self.prior_mixin, verbose=verbose, from_prior=(self.round==1))
+                trn_data = self.gen(n_train_round, prior_mixin=self.prior_mixin, verbose=verbose)
                 if text_verbose:
-                  print('Done after {:.4g} min'.format((time.time()-t0)/60))
+                  print('\tDone after {:.4g} min'.format((time.time()-t0)/60))
                 
             # Append generated prior samples to loaded prior samples. 
             if r_append_data:
@@ -305,12 +303,11 @@ class SNPE(BaseInference):
             
             # Update number of samples.
             n_train_round = trn_data[0].shape[0]
-            if text_verbose: print('\t Total number of samples: ' + str(n_train_round))
             
             # Save data sampled from prior for future use.
             if r_save_data:
-                if text_verbose: print('\t Saving ' + str(n_train_round) + ' samples to ' + init_trn_data_file)
-                with open(init_trn_data_file + '.pkl', 'wb') as f:
+                if text_verbose: print('\tSaving ' + str(n_train_round) + ' samples to ' + init_tds_file)
+                with open(init_tds_file + '.pkl', 'wb') as f:
                     pickle.dump(trn_data, f, pickle.HIGHEST_PROTOCOL)
 
             # Precompute importance weights
@@ -331,8 +328,7 @@ class SNPE(BaseInference):
             
             # Get observed or pseudo-observed value.
             obs = self.get_obs(perc_tds)
-            if self.pseudo_obs_perc is not None or self.pseudo_obs_n:
-                self.pseudo_obs.append(obs)
+            self.pseudo_obs.append(obs)
             
             # Update importance weights based on kernel.
             if self.kernel is not None:
@@ -359,20 +355,23 @@ class SNPE(BaseInference):
                     # Set and save bandwidth.
                     self.kernel.set_bandwidth(bandwidth_rel)
                     self.kernel_bandwidth.append(bandwidth_rel)
+                else:
+                    self.kernel_bandwidth.append(self.kernel.bandwidth)
                 
                 # Compute importance weights with kernel.    
                 iws *= self.kernel.eval(trn_data[1].reshape(n_train_round, -1))
+            else:
+              self.kernel_bandwidth.append(np.nan)
             
             # Add importance weights to data.
             trn_data = (trn_data[0], trn_data[1], iws)
 
             if text_verbose:
                 t0 = time.time()
-                print('\t Training network with observed = {:.2g} and bw = {:.2g} ... '.format(float(obs), self.kernel.bandwidth), end ='')
+                print('\tTraining network with observed = {:.2g} and bw = {:.2g} ... '.format(float(obs), self.kernel.bandwidth), end ='')
             
             # Train network.
-            trn_inputs = [self.network.params, self.network.stats,
-                          self.network.iws]
+            trn_inputs = [self.network.params, self.network.stats, self.network.iws]
 
             t = Trainer(self.network,
                         self.loss(N=n_train_round, round_cl=round_cl),
@@ -385,7 +384,7 @@ class SNPE(BaseInference):
                                 verbose=verbose, stop_on_nan=stop_on_nan))
 
             if text_verbose:
-                print('Done after {:.4g} min'.format((time.time()-t0)/60))
+                print('\tDone after {:.4g} min'.format((time.time()-t0)/60))
                                 
             trn_datasets.append(trn_data)
             
@@ -394,6 +393,5 @@ class SNPE(BaseInference):
             except np.linalg.LinAlgError:
                 posteriors.append(None)
                 print("Cannot predict posterior after round {} due to NaNs".format(r))
-                break
 
         return logs, trn_datasets, posteriors
