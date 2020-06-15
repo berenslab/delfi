@@ -11,6 +11,7 @@ class SNPE(BaseInference):
                  kernel_bandwidth_perc=None, kernel_bandwidth_n=None, kernel_bandwidth_min=None,
                  pseudo_obs_use_all_data=False, prior_norm=False, pilot_samples=100,
                  convert_to_T=3, reg_lambda=0.01, prior_mixin=0, kernel=None, seed=None, verbose=True,
+                 use_doubling=False, 
                  **kwargs):
         """Sequential neural posterior estimation (SNPE)
 
@@ -57,6 +58,10 @@ class SNPE(BaseInference):
             If provided, random number generator will be seeded
         verbose : bool
             Controls whether or not progressbars are shown
+        use_doubling: bool
+            if True, will duplicate every discrepancy such to have both
+            negative and positive values.
+        
         kwargs : additional keyword arguments
             Additional arguments for the NeuralNet instance, including:
                 n_components : int
@@ -88,6 +93,12 @@ class SNPE(BaseInference):
         self.kernel_bandwidth_min = kernel_bandwidth_min
         self.pseudo_obs = []
         self.kernel_bandwidth = []
+        
+        if use_doubling:
+          assert (pseudo_obs_n is None) and (pseudo_obs_perc is None)
+        
+        self.use_doubling = use_doubling
+        
 
         if np.any(np.isnan(self.obs)):
             raise ValueError("Observed data contains NaNs")
@@ -236,13 +247,11 @@ class SNPE(BaseInference):
             
             # Define what to do this round.
             # Load data only in first round, and only if flag is set.
-            r_load_data = (self.round==1) and load_trn_data
+            r_load_data = (r==0) and load_trn_data
             # Append data only in first round, and only if flag is set.
             r_append_data = r_load_data and append_trn_data
             # Save data only in first round, and only if flag is set.
-            r_save_data = (self.round==1) and save_trn_data
-            # Draw new samples in every round. Not in the first however if data was loaded and should not be appended.
-            r_generate_data = (self.round > 1) or not(load_trn_data) or append_trn_data
+            r_save_data = (r==0) and save_trn_data
         
             # draw training data (z-transformed params and stats)
             verbose = '(round {}) '.format(self.round) if self.verbose else False
@@ -269,7 +278,6 @@ class SNPE(BaseInference):
             if r_load_data:
                 with open(init_tds_file + '.pkl', 'rb') as f:
                     loaded_trn_data = pickle.load(f)
-                if isinstance(loaded_trn_data, list): loaded_trn_data = loaded_trn_data[0] # Take only first samples from prior.
                 assert loaded_trn_data[0].shape[0] == loaded_trn_data[1].shape[0], 'Number of samples must be the same'
                 if text_verbose: print('\tLoaded ' + str(loaded_trn_data[0].shape[0]) + ' samples from ' + init_tds_file + '.pkl')
                 
@@ -278,23 +286,26 @@ class SNPE(BaseInference):
                   trn_data = loaded_trn_data
 
             # Generate samples. Either because no data was loaded this round, or because data will be appended.
-            if r_generate_data: 
-                # Get number of samples to generate.
-                if type(n_train) == list:
-                    try:
-                        n_train_round = n_train[self.round-1]
-                    except:
-                        n_train_round = n_train[-1]
-                else:
-                    n_train_round = n_train
-                
-                if text_verbose:
-                  t0 = time.time()
-                  print('\tSampling ' + str(n_train_round) + ' samples ... ')
-                # Generate samples.
-                trn_data = self.gen(n_train_round, prior_mixin=self.prior_mixin, verbose=verbose)
-                if text_verbose:
-                  print('\tDone after {:.4g} min'.format((time.time()-t0)/60))
+            # Get number of samples to generate.
+            if type(n_train) == list:
+                try:
+                    n_train_round = n_train[self.round-1]
+                except:
+                    n_train_round = n_train[-1]
+            else:
+                n_train_round = n_train
+
+            
+            if n_train_round > 0:
+              if text_verbose:
+                t0 = time.time()
+                print('\tSampling ' + str(n_train_round) + ' samples ... ')
+              # Generate samples.
+              trn_data = self.gen(n_train_round, prior_mixin=self.prior_mixin, verbose=verbose)
+              if text_verbose:
+                print('\tDone after {:.4g} min'.format((time.time()-t0)/60))
+            else:
+              trn_data = loaded_trn_data
                 
             # Append generated prior samples to loaded prior samples. 
             if r_append_data:
@@ -318,6 +329,7 @@ class SNPE(BaseInference):
                 iws = p_prior / (self.prior_mixin * p_prior + (1 - self.prior_mixin) * p_proposal)
             else:
                 iws = np.ones((n_train_round,))
+            
             # normalize weights
             iws /= np.mean(iws)
             
@@ -365,7 +377,7 @@ class SNPE(BaseInference):
             
             # Add importance weights to data.
             trn_data = (trn_data[0], trn_data[1], iws)
-
+              
             if text_verbose:
                 t0 = time.time()
                 print('\tTraining network with observed = {:.2g} and bw = {:.2g} ... '.format(float(obs), self.kernel.bandwidth), end ='')
@@ -373,12 +385,22 @@ class SNPE(BaseInference):
             # Train network.
             trn_inputs = [self.network.params, self.network.stats, self.network.iws]
 
-            t = Trainer(self.network,
-                        self.loss(N=n_train_round, round_cl=round_cl),
-                        trn_data=trn_data, trn_inputs=trn_inputs,
-                        seed=self.gen_newseed(),
-                        monitor=self.monitor_dict_from_names(monitor),
-                        **kwargs)
+            if not self.use_doubling:
+              t = Trainer(self.network,
+                          self.loss(N=n_train_round, round_cl=round_cl),
+                          trn_data=trn_data, trn_inputs=trn_inputs,
+                          seed=self.gen_newseed(),
+                          monitor=self.monitor_dict_from_names(monitor),
+                          **kwargs)
+            else:
+              print('\tDuplicate all discrepancies (pos and neg)')
+              t = Trainer(self.network,
+                          self.loss(N=n_train_round*2, round_cl=round_cl),
+                          trn_data=(np.tile(trn_data[0], (2, 1)), np.concatenate([trn_data[1], trn_data[1]*(-1)]), np.tile(iws, 2)*0.5),
+                          trn_inputs=trn_inputs,
+                          seed=self.gen_newseed(),
+                          monitor=self.monitor_dict_from_names(monitor),
+                          **kwargs)
     
             logs.append(t.train(epochs=epochs, minibatch=minibatch,
                                 verbose=verbose, stop_on_nan=stop_on_nan))
