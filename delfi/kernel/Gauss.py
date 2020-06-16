@@ -4,24 +4,27 @@ from delfi.kernel.BaseKernel import BaseKernel
 
 
 class Gauss(BaseKernel):
+    
     @staticmethod
     def kernel(u):
         return 1/np.sqrt(2*np.pi)*np.exp(-0.5*u**2)
         
 class HalfGauss(BaseKernel):
-    def __init__(self, obs, bandwidth=1., loss_failed_sims=np.inf, atleast=None):
+    def __init__(self, obs, bandwidth=1., loss_failed_sims=np.inf, atleast=None, nan_weight=0.0):
         super().__init__(obs, bandwidth=bandwidth, spherical=False, atleast=atleast)
         self.loss_failed_sims = loss_failed_sims
+        self.nan_weight = nan_weight
 
-    @staticmethod
+
     def kernel(u):
         if np.isnan(u):
-            return 0.0
+            return self.nan_weight
         elif u <= 0.0 :
             return 1/np.sqrt(2*np.pi)
         else:
             return 1/np.sqrt(2*np.pi)*np.exp(-0.5*u**2)
-            
+    
+    
     def eval(self, x):
         """Kernel for loss calibration
 
