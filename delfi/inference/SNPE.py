@@ -7,7 +7,7 @@ from delfi.neuralnet.Trainer import Trainer
 from delfi.neuralnet.loss.regularizer import svi_kl_init, svi_kl_zero
 
 class SNPE(BaseInference):
-    def __init__(self, generator, obs=None, pseudo_obs_perc=None, pseudo_obs_n=None,
+    def __init__(self, generator, obs=None, pseudo_obs_dim=0, pseudo_obs_perc=None, pseudo_obs_n=None,
                  kernel_bandwidth_perc=None, kernel_bandwidth_n=None, kernel_bandwidth_min=None,
                  pseudo_obs_use_all_data=False, prior_norm=False, pilot_samples=100,
                  convert_to_T=3, reg_lambda=0.01, prior_mixin=0, kernel=None, seed=None, verbose=True,
@@ -24,6 +24,9 @@ class SNPE(BaseInference):
             If list, obs will be changed every round. In this case it should be converging to the true value.
             The different observed value can be used as guidance for the algorithm.
             Alternatively, set pseudo_obs_perc.
+        pseudo_obs_dim : int
+            Dimension to apply pseudo-obs to.
+            TODO: Extend to multiple dimensions.
         pseudo_obs_perc : double in [0,100]
             If set, adaptively change obs relative to percentile of best samples.
             Set to zero to use best sample only.
@@ -85,6 +88,8 @@ class SNPE(BaseInference):
         assert kernel_bandwidth_perc is None or kernel_bandwidth_n is None, 'Can\'t set both. Use one or none.'
         
         self.obs = np.asarray(obs)
+        assert pseudo_obs_dim < self.obs.size
+        self.pseudo_obs_dim = pseudo_obs_dim
         self.pseudo_obs_perc = pseudo_obs_perc
         self.pseudo_obs_n = pseudo_obs_n
         self.pseudo_obs_use_all_data = pseudo_obs_use_all_data
@@ -96,12 +101,10 @@ class SNPE(BaseInference):
         
         if use_doubling:
           assert (pseudo_obs_n is None) and (pseudo_obs_perc is None)
-        
         self.use_doubling = use_doubling
-        
 
         if np.any(np.isnan(self.obs)):
-            raise ValueError("Observed data contains NaNs")
+          raise ValueError("Observed data contains NaNs")
 
         self.reg_lambda = reg_lambda
         self.convert_to_T = convert_to_T
@@ -145,6 +148,7 @@ class SNPE(BaseInference):
 
         return loss
 
+
     def get_obs(self, tds=None):
       """ Get or compute observed value
       
@@ -157,7 +161,7 @@ class SNPE(BaseInference):
           to the true observed value. Should eventually converge to the true value.
       """
       
-      if self.pseudo_obs_perc is None and self.pseudo_obs_n is None:
+      if (self.pseudo_obs_perc is None) and (self.pseudo_obs_n is None):
         if isinstance(self.obs, np.ndarray):
             # Take fixed value.
             return self.obs
@@ -166,16 +170,59 @@ class SNPE(BaseInference):
             return self.obs[np.min([len(self.obs)-1, r-1])]
       else:
           assert isinstance(self.obs, np.ndarray)
-          abs_tds = np.abs(tds - self.obs)
+          abs_tds = np.abs(tds[:,self.pseudo_obs_dim] - self.obs[0,self.pseudo_obs_dim]).flatten()
+          
           if self.pseudo_obs_perc is not None:
-              # Take percentile of samples.
-              obs = abs_tds[np.argsort(abs_tds.flatten())[int(np.round(self.pseudo_obs_perc/100*abs_tds.shape[0]))]]
-              return np.reshape(obs, self.obs.shape)
+              new_obs_i = abs_tds[np.argsort(abs_tds)[int(np.round(self.pseudo_obs_perc/100*abs_tds.size))]]
           elif self.pseudo_obs_n is not None:
-              # Take n-th best sample.
-              obs = abs_tds[np.argsort(abs_tds.flatten())[self.pseudo_obs_n-1]]
-              return np.reshape(obs, self.obs.shape)
-        
+              new_obs_i = abs_tds[np.argsort(abs_tds)[self.pseudo_obs_n-1]]
+              
+          new_obs = self.obs.copy()
+          new_obs[0,self.pseudo_obs_dim] = new_obs_i
+          return new_obs
+    
+    
+    def update_kernel_bandwidth(self, tds=None):
+      """ Update kernel_bandwidth
+      
+      Parameters:
+      -----------
+      
+      tds: array
+          Only needed when obs is computed as percentile of current samples.
+          Will then be used to compute the kernel_bandwidth_perc percentile of the samples relative
+          to the true observed value. Should eventually converge to the true value.
+      """
+    
+      # Update bandwidth of kernel.
+      if (self.kernel_bandwidth_perc is None) and (self.kernel_bandwidth_n is None):
+          self.kernel_bandwidth.append(self.kernel.bandwidth)
+          return 
+      
+      assert isinstance(self.obs, np.ndarray)
+      abs_tds = np.abs(tds[:,self.pseudo_obs_dim] - self.obs[0,self.pseudo_obs_dim]).flatten()
+      
+      if self.kernel_bandwidth_perc is not None:
+          bandwidth_tot = abs_tds[np.argsort(abs_tds)[int(np.round(self.kernel_bandwidth_perc/100*abs_tds.size))]]
+      else:
+          bandwidth_tot = abs_tds[np.argsort(abs_tds)[self.kernel_bandwidth_n-1]]
+      
+      bandwidth_rel = bandwidth_tot - self.obs[0,self.pseudo_obs_dim]
+      
+      if self.kernel_bandwidth_min is not None:
+          if not np.isfinite(bandwidth_rel):
+              print('\t Computed bandwidth was NaN, use minimum value {:.2g}.'.format(self.kernel_bandwidth_min))
+              bandwidth_rel = self.kernel_bandwidth_min
+          elif bandwidth_rel < self.kernel_bandwidth_min:
+              print('\t Computed bandwidth was {:.2g} which is smaller than the minimum value {:.2g}.'.format(bandwidth_rel, self.kernel_bandwidth_min))
+              bandwidth_rel = self.kernel_bandwidth_min
+      
+      assert bandwidth_rel > 0, 'Bandwidth is smaller than 0. Use different bandwidth parameter or set kernel_bandwidth_min.'
+      
+      # Set and save bandwidth.
+      self.kernel.set_bandwidth(bandwidth_rel)
+      self.kernel_bandwidth.append(bandwidth_rel)
+    
     def run(self, n_train=100, n_rounds=2, epochs=100, minibatch=50,
             round_cl=1, stop_on_nan=False, proposal=None, text_verbose=True,
             monitor=None, load_trn_data=False, save_trn_data=False, append_trn_data=False,
@@ -204,7 +251,7 @@ class SNPE(BaseInference):
             Round after which to start continual learning
         stop_on_nan : bool
             If True, will halt if NaNs in the loss are encountered
-        proposal : Distribution of None
+        proposal : Distribution or None
             If given, will use this distribution as the starting proposal prior
         text_verbose: bool
             if True, simple print output for the progress
@@ -256,13 +303,13 @@ class SNPE(BaseInference):
             # draw training data (z-transformed params and stats)
             verbose = '(round {}) '.format(self.round) if self.verbose else False
             
+            # Set proposal distribution to sample from.
             if r == 0 and proposal is not None:
                 self.generator.proposal = proposal
-            # if round > 1, set new proposal distribution before sampling
             elif self.round > 1:
                 # posterior becomes new proposal prior
                 # choose specific observation. It is either fixed, or changes per round.
-                proposal = self.predict(obs) # see super
+                proposal = self.predict(obs)
 
                 # convert proposal to student's T?
                 if self.convert_to_T is not None:
@@ -300,10 +347,13 @@ class SNPE(BaseInference):
               if text_verbose:
                 t0 = time.time()
                 print('\tSampling ' + str(n_train_round) + ' samples ... ')
+              
               # Generate samples.
               trn_data = self.gen(n_train_round, prior_mixin=self.prior_mixin, verbose=verbose)
+              
               if text_verbose:
                 print('\tDone after {:.4g} min'.format((time.time()-t0)/60))
+            
             else:
               trn_data = loaded_trn_data
                 
@@ -346,29 +396,7 @@ class SNPE(BaseInference):
             if self.kernel is not None:
                 # Update observed in kernel.
                 self.kernel.obs = obs
-                
-                # Update bandwidth of kernel.
-                if self.kernel_bandwidth_perc is not None or self.kernel_bandwidth_n is not None:
-                    abs_tds = np.abs(perc_tds - self.obs)
-                    if self.kernel_bandwidth_perc is not None:
-                        # Compute percentile.
-                        bandwidth_tot = abs_tds[np.argsort(abs_tds.flatten())[int(np.round(self.kernel_bandwidth_perc/100*abs_tds.shape[0]))]]
-                    elif self.kernel_bandwidth_n is not None:
-                        # Compute n-th best sample.
-                        bandwidth_tot = abs_tds[np.argsort(abs_tds.flatten())[self.kernel_bandwidth_n-1]]
-                    
-                    # Subtract current obs value.
-                    bandwidth_rel = float(bandwidth_tot - obs)
-                    if self.kernel_bandwidth_min is not None:
-                      if bandwidth_rel < self.kernel_bandwidth_min:
-                        print('\t Computed bandwidth was {:.2g} which is smaller than the minimum value {:.2g}.'.format(bandwidth_rel, self.kernel_bandwidth_min))
-                        bandwidth_rel = self.kernel_bandwidth_min
-                    assert bandwidth_rel > 0, 'Bandwidth is smaller than 0. Use different bandwidth parameter or set kernel_bandwidth_min.'
-                    # Set and save bandwidth.
-                    self.kernel.set_bandwidth(bandwidth_rel)
-                    self.kernel_bandwidth.append(bandwidth_rel)
-                else:
-                    self.kernel_bandwidth.append(self.kernel.bandwidth)
+                self.update_kernel_bandwidth(perc_tds)
                 
                 # Compute importance weights with kernel.    
                 iws *= self.kernel.eval(trn_data[1].reshape(n_train_round, -1))
@@ -380,30 +408,25 @@ class SNPE(BaseInference):
               
             if text_verbose:
                 t0 = time.time()
-                print('\tTraining network with observed = {:.2g} and bw = {:.2g} ... '.format(float(obs), self.kernel.bandwidth), end ='')
+                print('\tTraining network with observed', str(obs[0,:]), 'and bw', self.kernel.bandwidth, end =' ... ')
             
             # Train network.
             trn_inputs = [self.network.params, self.network.stats, self.network.iws]
 
-            if not self.use_doubling:
-              t = Trainer(self.network,
-                          self.loss(N=n_train_round, round_cl=round_cl),
-                          trn_data=trn_data, trn_inputs=trn_inputs,
-                          seed=self.gen_newseed(),
-                          monitor=self.monitor_dict_from_names(monitor),
-                          **kwargs)
-            else:
+            if self.use_doubling:
               print('\tDuplicate all discrepancies (pos and neg)')
-              t = Trainer(self.network,
-                          self.loss(N=n_train_round*2, round_cl=round_cl),
-                          trn_data=(np.tile(trn_data[0], (2, 1)), np.concatenate([trn_data[1], trn_data[1]*(-1)]), np.tile(iws, 2)*0.5),
-                          trn_inputs=trn_inputs,
-                          seed=self.gen_newseed(),
-                          monitor=self.monitor_dict_from_names(monitor),
-                          **kwargs)
+              assert np.all(trn_data[1] >= 0)
+              trn_data=(np.tile(trn_data[0], (2, 1)), np.concatenate([trn_data[1], trn_data[1]*(-1)]), np.tile(iws, 2)*0.5)
+              n_train_round *= 2
     
-            logs.append(t.train(epochs=epochs, minibatch=minibatch,
-                                verbose=verbose, stop_on_nan=stop_on_nan))
+             t = Trainer(self.network,
+                         self.loss(N=n_train_round, round_cl=round_cl),
+                         trn_data=trn_data, trn_inputs=trn_inputs,
+                         seed=self.gen_newseed(),
+                         monitor=self.monitor_dict_from_names(monitor),
+                         **kwargs)
+    
+            logs.append(t.train(epochs=epochs, minibatch=minibatch, verbose=verbose, stop_on_nan=stop_on_nan))
 
             if text_verbose:
                 print('\tDone after {:.4g} min'.format((time.time()-t0)/60))

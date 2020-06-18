@@ -16,7 +16,7 @@ class HalfGauss(BaseKernel):
         self.nan_weight = nan_weight
 
 
-    def kernel(u):
+    def kernel(self, u):
         if np.isnan(u):
             return self.nan_weight
         elif u <= 0.0 :
@@ -44,7 +44,7 @@ class HalfGauss(BaseKernel):
         out = np.ones((x.shape[0],))
 
         for n in range(x.shape[0]):
-            if np.any(x[n] >= self.loss_failed_sims):
+            if x[n] is None:
               us = np.nan * self.obs
             else:
               us = np.dot(self.invH, np.array(x[n] - self.obs).T)
