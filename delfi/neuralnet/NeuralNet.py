@@ -193,6 +193,14 @@ class NeuralNet(object):
         self.lprobs_comps = [-0.5 * tt.sum(tt.sum((self.params - m).dimshuffle(
             [0, 'x', 1]) * U, axis=2)**2, axis=1) + ldetU
             for m, U, ldetU in zip(self.ms, self.Us, self.ldetUs)]
+            
+        # this seems to compute the current loss of the network.
+        # L(phi) = - 1/N sum_n [ iws_n * K_n + log[q_phi (t_n | x_n)] ]
+        # log[q_phi (t_n | x_n)] is computed here:
+        # The last line computes the normalization.
+        # The probabilities q are computed in lprobs_comps, see above.
+        # A is just the weighting for the different components.
+        
         self.lprobs = (MyLogSumExp(tt.stack(self.lprobs_comps, axis=1) + tt.log(self.a), axis=1) \
                       - (0.5 * self.n_outputs * np.log(2 * np.pi))).squeeze()
 
@@ -210,6 +218,8 @@ class NeuralNet(object):
         self.dlprobs_comps = [-0.5 * tt.sum(tt.sum((self.params - m).dimshuffle(
             [0, 'x', 1]) * U, axis=2)**2, axis=1) + ldetU
             for m, U, ldetU in zip(self.dms, self.dUs, self.dldetUs)]
+            
+        # dlprobs is never used? why compute it?
         self.dlprobs = (MyLogSumExp(tt.stack(self.dlprobs_comps, axis=1) + tt.log(self.da), axis=1) \
                        - (0.5 * self.n_outputs * np.log(2 * np.pi))).squeeze()
 

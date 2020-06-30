@@ -36,7 +36,7 @@ class SNPE(BaseInference):
             If set, adaptively change kernel bandwidth as percentile of best samples.
         kernel_bandwidth_n : integer in [1, np.inf]
             If set, adaptively change kernel bandwidth relatively to the n-th best sample.
-        kernel_bandwidth_min : double > 0
+        kernel_bandwidth_min : double >= 0
             If set, bandwidth will always be at least this size.
         pseudo_obs_use_all_data : bool
             Set to True to use all training data to compute percentile obs.
@@ -89,6 +89,7 @@ class SNPE(BaseInference):
         
         self.obs = np.asarray(obs)
         assert pseudo_obs_dim < self.obs.size
+        
         self.pseudo_obs_dim = pseudo_obs_dim
         self.pseudo_obs_perc = pseudo_obs_perc
         self.pseudo_obs_n = pseudo_obs_n
@@ -100,11 +101,11 @@ class SNPE(BaseInference):
         self.kernel_bandwidth = []
         
         if use_doubling:
-          assert (pseudo_obs_n is None) and (pseudo_obs_perc is None)
+            assert (pseudo_obs_n is None) and (pseudo_obs_perc is None)
         self.use_doubling = use_doubling
 
         if np.any(np.isnan(self.obs)):
-          raise ValueError("Observed data contains NaNs")
+            raise ValueError("Observed data contains NaNs")
 
         self.reg_lambda = reg_lambda
         self.convert_to_T = convert_to_T
@@ -148,85 +149,117 @@ class SNPE(BaseInference):
 
         return loss
 
-
-    def get_obs(self, tds=None):
+    @staticmethod
+    def compute_pseudo_obs(obs, pseudo_obs_dim, tds=None, q=None, n=None):
       """ Get or compute observed value
       
       Parameters:
       -----------
       
+      obs : array
+          Observed data
+          
+      pseudo_obs_dim : int
+          Dimension to compute pseudo_obs for
+      
       tds: array
           Only needed when obs is computed as percentile of current samples.
           Will then be used to compute the pseudo_obs_perc percentile of the samples relative
           to the true observed value. Should eventually converge to the true value.
+          
+      q / n : float / int
+          Define how to compute pseudo_obs, either as percentile or as n-th sample.
+          
       """
       
-      if (self.pseudo_obs_perc is None) and (self.pseudo_obs_n is None):
-        if isinstance(self.obs, np.ndarray):
-            # Take fixed value.
-            return self.obs
-        elif isinstance(self.obs, list):
-            # Take element from round. If more rounds than elements, take last.
-            return self.obs[np.min([len(self.obs)-1, r-1])]
+      if (q is None) and (n is None):
+          if isinstance(obs, np.ndarray):
+              new_obs = obs
+          elif isinstance(obs, list):
+              new_obs = obs[np.min([len(obs)-1, r-1])]
+          else:
+              raise NotImplementedError()
+
       else:
-          assert isinstance(self.obs, np.ndarray)
-          abs_tds = np.abs(tds[:,self.pseudo_obs_dim] - self.obs[0,self.pseudo_obs_dim]).flatten()
+          assert isinstance(obs, np.ndarray)
+          abs_tds = np.abs(tds[:,pseudo_obs_dim] - obs[0,pseudo_obs_dim]).flatten()
           
-          if self.pseudo_obs_perc is not None:
-              new_obs_i = abs_tds[np.argsort(abs_tds)[int(np.round(self.pseudo_obs_perc/100*abs_tds.size))]]
-          elif self.pseudo_obs_n is not None:
-              new_obs_i = abs_tds[np.argsort(abs_tds)[self.pseudo_obs_n-1]]
+          if q is not None:
+              new_obs_i = abs_tds[np.argsort(abs_tds)[int(np.round(q/100*abs_tds.size))]]
+          else:
+              new_obs_i = abs_tds[np.argsort(abs_tds)[n-1]]
               
-          new_obs = self.obs.copy()
-          new_obs[0,self.pseudo_obs_dim] = new_obs_i
-          return new_obs
+          new_obs = obs.copy()
+          new_obs[0,pseudo_obs_dim] = new_obs_i
+          
+      return new_obs
     
     
-    def update_kernel_bandwidth(self, tds=None):
-      """ Update kernel_bandwidth
+    @staticmethod
+    def compute_kernel_bandwidth(obs, pseudo_obs_dim, bandwidth, bandwidth_min, tds=None, q=None, n=None):
+      """ Update kernel_bandwidth for dimension with adaptive observed.
+      Can not deal with multiple adaptive dimensions.
       
       Parameters:
       -----------
       
+      obs : array
+          Observed data
+          
+      pseudo_obs_dim : int
+          Dimension to compute pseudo_obs for
+      
+      bandwidth : float or 1d-array
+          Current bandwidth.
+      
       tds: array
           Only needed when obs is computed as percentile of current samples.
-          Will then be used to compute the kernel_bandwidth_perc percentile of the samples relative
+          Will then be used to compute the pseudo_obs_perc percentile of the samples relative
           to the true observed value. Should eventually converge to the true value.
+          
+      q / n : float / int
+          Define how to compute pseudo_obs, either as percentile or as n-th sample.
+          
+      Returns:
+      --------
+      
+      bandwidth
+          
       """
     
-      # Update bandwidth of kernel.
-      if (self.kernel_bandwidth_perc is None) and (self.kernel_bandwidth_n is None):
-          self.kernel_bandwidth.append(self.kernel.bandwidth)
-          return 
-      
-      assert isinstance(self.obs, np.ndarray)
-      abs_tds = np.abs(tds[:,self.pseudo_obs_dim] - self.obs[0,self.pseudo_obs_dim]).flatten()
-      
-      if self.kernel_bandwidth_perc is not None:
-          bandwidth_tot = abs_tds[np.argsort(abs_tds)[int(np.round(self.kernel_bandwidth_perc/100*abs_tds.size))]]
+      if (q is None) and (n is None):
+          if isinstance(bandwidth, (float, int)):
+              return bandwidth
+          else:
+              return bandwidth[pseudo_obs_dim]
       else:
-          bandwidth_tot = abs_tds[np.argsort(abs_tds)[self.kernel_bandwidth_n-1]]
+          assert isinstance(obs, np.ndarray)
       
-      bandwidth_rel = bandwidth_tot - self.obs[0,self.pseudo_obs_dim]
+      abs_tds = np.abs(tds[:,pseudo_obs_dim] - obs[0,pseudo_obs_dim]).flatten()
       
-      if self.kernel_bandwidth_min is not None:
-          if not np.isfinite(bandwidth_rel):
-              print('\t Computed bandwidth was NaN, use minimum value {:.2g}.'.format(self.kernel_bandwidth_min))
-              bandwidth_rel = self.kernel_bandwidth_min
-          elif bandwidth_rel < self.kernel_bandwidth_min:
-              print('\t Computed bandwidth was {:.2g} which is smaller than the minimum value {:.2g}.'.format(bandwidth_rel, self.kernel_bandwidth_min))
-              bandwidth_rel = self.kernel_bandwidth_min
+      # Compute new bandwidth.
+      if q is not None:
+          new_bandwidth = abs_tds[np.argsort(abs_tds)[int(np.round(q/100*abs_tds.size))]]
+      else:
+          new_bandwidth = abs_tds[np.argsort(abs_tds)[n-1]]
+      new_bandwidth -= obs[0,pseudo_obs_dim]
       
-      assert bandwidth_rel > 0, 'Bandwidth is smaller than 0. Use different bandwidth parameter or set kernel_bandwidth_min.'
+      if bandwidth_min is not None:
+          if not np.isfinite(new_bandwidth):
+              print('\t Computed bandwidth was NaN, use minimum value {:.2g}.'.format(bandwidth_min))
+              new_bandwidth = bandwidth_min
+          elif new_bandwidth < bandwidth_min:
+              print('\t Computed bandwidth {:.2g} smaller than minimum {:.2g}.'.format(new_bandwidth, bandwidth_min))
+              new_bandwidth = bandwidth_min
       
-      # Set and save bandwidth.
-      self.kernel.set_bandwidth(bandwidth_rel)
-      self.kernel_bandwidth.append(bandwidth_rel)
+      assert new_bandwidth > 0
+      
+      return new_bandwidth
+    
     
     def run(self, n_train=100, n_rounds=2, epochs=100, minibatch=50,
-            round_cl=1, stop_on_nan=False, proposal=None, text_verbose=True,
-            monitor=None, load_trn_data=False, save_trn_data=False, append_trn_data=False,
-            init_tds_file=None, verbose=False, **kwargs):
+            round_cl=1, stop_on_nan=False, proposal=None, verbose=True,
+            monitor=None, initial_tds=None, **kwargs):
 
         """Run algorithm
 
@@ -253,17 +286,10 @@ class SNPE(BaseInference):
             If True, will halt if NaNs in the loss are encountered
         proposal : Distribution or None
             If given, will use this distribution as the starting proposal prior
-        text_verbose: bool
+        verbose: bool
             if True, simple print output for the progress
-        load_trn_data:bool
-            If True, load tds from specified file
-        save_trn_data: bool
-            If True, save tds to specified file
-        append_trn_data: bool
-            if True draws n_train new trainingsdata and appends it to the loaded tds
-        init_tds_file: None or filepath
-            if filepath loads/saves the trainingsdata of this file
-
+        initial_tds : tuple of training data
+            Precomputed training data.
 
         kwargs : additional keyword arguments
             Additional arguments for the Trainer instance
@@ -277,35 +303,18 @@ class SNPE(BaseInference):
         posteriors : list of distributions
             posterior after each round
         """
+        
         logs = []
         trn_datasets = []
         posteriors = []
-
-        if load_trn_data or save_trn_data:
-            assert init_tds_file is not None, 'If you want to load or save data, please state a file'
-        if append_trn_data and not(load_trn_data):
-            print('Will not append since loading is not set to true.')
         
         for r in range(n_rounds):
-            
-            # Update round.
             self.round += 1
-            if text_verbose: print('\tRound: ' + str(r+1) + ' of ' + str(n_rounds) + '. \t Network training round: ' + str(self.round))
-            
-            # Define what to do this round.
-            # Load data only in first round, and only if flag is set.
-            r_load_data = (r==0) and load_trn_data
-            # Append data only in first round, and only if flag is set.
-            r_append_data = r_load_data and append_trn_data
-            # Save data only in first round, and only if flag is set.
-            r_save_data = (r==0) and save_trn_data
-        
-            # draw training data (z-transformed params and stats)
-            verbose = '(round {}) '.format(self.round) if self.verbose else False
             
             # Set proposal distribution to sample from.
             if r == 0 and proposal is not None:
                 self.generator.proposal = proposal
+            
             elif self.round > 1:
                 # posterior becomes new proposal prior
                 # choose specific observation. It is either fixed, or changes per round.
@@ -321,55 +330,40 @@ class SNPE(BaseInference):
 
                 self.generator.proposal = proposal
 
-            # Loading training from previous trainings. Only samples from the prior distribution are loaded.
-            if r_load_data:
-                with open(init_tds_file + '.pkl', 'rb') as f:
-                    loaded_trn_data = pickle.load(f)
-                assert loaded_trn_data[0].shape[0] == loaded_trn_data[1].shape[0], 'Number of samples must be the same'
-                if text_verbose: print('\tLoaded ' + str(loaded_trn_data[0].shape[0]) + ' samples from ' + init_tds_file + '.pkl')
-                
-                # If not data will be generated this round, make loaded data the only data.
-                if not(r_append_data):
-                  trn_data = loaded_trn_data
-
-            # Generate samples. Either because no data was loaded this round, or because data will be appended.
             # Get number of samples to generate.
             if type(n_train) == list:
-                try:
-                    n_train_round = n_train[self.round-1]
-                except:
-                    n_train_round = n_train[-1]
+                try:    n_train_round = n_train[self.round-1]
+                except: n_train_round = n_train[-1]
             else:
                 n_train_round = n_train
 
+            if verbose: print('\t', n_train_round, 'samples requested.')
+
+            if initial_tds is not None:
+                assert initial_tds[0].shape[0] == initial_tds[1].shape[0], 'Number of samples must be the same'
+                n_loaded_samples = initial_tds[0].shape[0]
+                if verbose: print('\t', n_loaded_samples, 'samples given.')
+            else:
+                n_loaded_samples = 0
+            
+            n_train_round -= n_loaded_samples
             
             if n_train_round > 0:
-              if text_verbose:
                 t0 = time.time()
-                print('\tSampling ' + str(n_train_round) + ' samples ... ')
-              
-              # Generate samples.
-              trn_data = self.gen(n_train_round, prior_mixin=self.prior_mixin, verbose=verbose)
-              
-              if text_verbose:
-                print('\tDone after {:.4g} min'.format((time.time()-t0)/60))
+                
+                if verbose: print('\tDrawing', n_train_round, 'parameter samples ... ')
+                trn_data = self.gen(n_train_round, prior_mixin=self.prior_mixin, verbose=False)
+                if verbose: print('\tDone after {:.4g} min'.format((time.time()-t0)/60))
+                  
+                if initial_tds is not None:
+                  trn_data = (np.concatenate((initial_tds[0], trn_data[0])),
+                              np.concatenate((initial_tds[1], trn_data[1])))
             
             else:
-              trn_data = loaded_trn_data
-                
-            # Append generated prior samples to loaded prior samples. 
-            if r_append_data:
-                trn_data = (np.concatenate((loaded_trn_data[0], trn_data[0])),
-                            np.concatenate((loaded_trn_data[1], trn_data[1])))
+                trn_data = initial_tds                
             
             # Update number of samples.
             n_train_round = trn_data[0].shape[0]
-            
-            # Save data sampled from prior for future use.
-            if r_save_data:
-                if text_verbose: print('\tSaving ' + str(n_train_round) + ' samples to ' + init_tds_file)
-                with open(init_tds_file + '.pkl', 'wb') as f:
-                    pickle.dump(trn_data, f, pickle.HIGHEST_PROTOCOL)
 
             # Precompute importance weights
             if self.generator.proposal is not None:
@@ -384,51 +378,69 @@ class SNPE(BaseInference):
             iws /= np.mean(iws)
             
             # Get training values.
-            perc_tds = trn_data[1]
+            pseudo_obs_tds = trn_data[1]
             if self.pseudo_obs_use_all_data:
-                perc_tds = np.concatenate([perc_tds] + [tds_i[1] for tds_i in trn_datasets])                
+                pseudo_obs_tds = np.concatenate([pseudo_obs_tds] + [tds_i[1] for tds_i in trn_datasets])                
             
             # Get observed or pseudo-observed value.
-            obs = self.get_obs(perc_tds)
-            self.pseudo_obs.append(obs)
-            
+            obs = self.compute_pseudo_obs(
+                obs=self.obs, pseudo_obs_dim=self.pseudo_obs_dim, tds=pseudo_obs_tds,
+                q=self.pseudo_obs_perc, n=self.pseudo_obs_n,
+            )
+
             # Update importance weights based on kernel.
             if self.kernel is not None:
-                # Update observed in kernel.
-                self.kernel.obs = obs
-                self.update_kernel_bandwidth(perc_tds)
+                kernel_bandwidth = self.compute_kernel_bandwidth(
+                    obs=self.obs, pseudo_obs_dim=self.pseudo_obs_dim,
+                    bandwidth=self.kernel.bandwidth, tds=pseudo_obs_tds,
+                    bandwidth_min=self.kernel_bandwidth_min,
+                    q=self.kernel_bandwidth_perc, n=self.kernel_bandwidth_n,
+                )
+                
+                if self.kernel.vector_kernel:
+                    self.kernel.set_max_weight_range_ii(obs[0,self.pseudo_obs_dim], ii=self.pseudo_obs_dim)
+                    self.kernel.set_bandwidth_ii(kernel_bandwidth, ii=self.pseudo_obs_dim)
+                else:
+                    self.kernel.obs = obs
+                    self.kernel.set_bandwidth(kernel_bandwidth)
                 
                 # Compute importance weights with kernel.    
                 iws *= self.kernel.eval(trn_data[1].reshape(n_train_round, -1))
-            else:
-              self.kernel_bandwidth.append(np.nan)
+            
+            # Save values.
+            self.pseudo_obs.append(obs)
+            self.kernel_bandwidth.append(self.kernel.bandwidth)
             
             # Add importance weights to data.
             trn_data = (trn_data[0], trn_data[1], iws)
               
-            if text_verbose:
+            if verbose:
                 t0 = time.time()
-                print('\tTraining network with observed', str(obs[0,:]), 'and bw', self.kernel.bandwidth, end =' ... ')
+                np.set_printoptions(precision=3)
+                print('\tTraining network with observed:')
+                print('\t', obs.flatten())
+                print('\tand kernel bandwidth:')
+                print('\t', self.kernel.bandwidth)
             
             # Train network.
             trn_inputs = [self.network.params, self.network.stats, self.network.iws]
 
             if self.use_doubling:
-              print('\tDuplicate all discrepancies (pos and neg)')
-              assert np.all(trn_data[1] >= 0)
-              trn_data=(np.tile(trn_data[0], (2, 1)), np.concatenate([trn_data[1], trn_data[1]*(-1)]), np.tile(iws, 2)*0.5)
-              n_train_round *= 2
+                print('\tDuplicate all discrepancies (pos and neg)')
+                assert np.all(trn_data[1] >= 0)
+                trn_data=(np.tile(trn_data[0], (2, 1)), np.concatenate([trn_data[1], trn_data[1]*(-1)]), np.tile(iws, 2)*0.5)
+                n_train_round *= 2
     
-             t = Trainer(self.network,
-                         self.loss(N=n_train_round, round_cl=round_cl),
-                         trn_data=trn_data, trn_inputs=trn_inputs,
-                         seed=self.gen_newseed(),
-                         monitor=self.monitor_dict_from_names(monitor),
-                         **kwargs)
+            t = Trainer(self.network,
+                        self.loss(N=n_train_round, round_cl=round_cl),
+                        trn_data=trn_data, trn_inputs=trn_inputs,
+                        seed=self.gen_newseed(),
+                        monitor=self.monitor_dict_from_names(monitor),
+                        **kwargs)
     
-            logs.append(t.train(epochs=epochs, minibatch=minibatch, verbose=verbose, stop_on_nan=stop_on_nan))
+            logs.append(t.train(epochs=epochs, minibatch=minibatch, verbose=False, stop_on_nan=stop_on_nan))
 
-            if text_verbose:
+            if verbose:
                 print('\tDone after {:.4g} min'.format((time.time()-t0)/60))
                                 
             trn_datasets.append(trn_data)
