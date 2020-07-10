@@ -155,11 +155,6 @@ class SNPE(BaseInference):
 
 
     @staticmethod
-    def percentile(arr, q):
-        return arr[np.argsort(arr)[int(np.round(q/100*arr.size))]]
-
-
-    @staticmethod
     def abs_diff_tds_obs_dim(tds, obs, ii):
         return np.abs(tds[:,ii] - obs[0,ii]).flatten()
 
@@ -192,7 +187,7 @@ class SNPE(BaseInference):
         abs_tds = self.abs_diff_tds_obs_dim(tds=tds, obs=obs, ii=pseudo_obs_dim)
         
         if q is not None:
-            new_obs_i = self.percentile(arr=abs_tds, q=q)
+            new_obs_i = np.percentile(abs_tds, q=q)
         else:
             new_obs_i = abs_tds[np.argsort(abs_tds)[n-1]]
             
@@ -260,7 +255,7 @@ class SNPE(BaseInference):
         
         # Compute new bandwidth.
         if q is not None:
-            new_bandwidth = self.percentile(arr=abs_tds, q=q) - obs[0,pseudo_obs_dim]
+            new_bandwidth = np.percentile(abs_tds, q=q) - obs[0,pseudo_obs_dim]
         else:
             new_bandwidth = abs_tds[np.argsort(abs_tds)[n-1]] - obs[0,pseudo_obs_dim]
         
