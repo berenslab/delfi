@@ -86,7 +86,7 @@ class SNPE(BaseInference):
         assert pseudo_obs_perc is None or pseudo_obs_n is None, 'Can\'t set both. Use one or none.'
         assert kernel_bandwidth_perc is None or kernel_bandwidth_n is None, 'Can\'t set both. Use one or none.'
         
-        self.obs = np.asarray(obs)
+        self.obs = np.asarray(obs).astype(float)
         assert pseudo_obs_dim < self.obs.size
         
         self.pseudo_obs_dim = pseudo_obs_dim
@@ -153,119 +153,128 @@ class SNPE(BaseInference):
 
         return loss
 
+
     @staticmethod
     def percentile(arr, q):
         return arr[np.argsort(arr)[int(np.round(q/100*arr.size))]]
-        
+
+
     @staticmethod
     def abs_diff_tds_obs_dim(tds, obs, ii):
         return np.abs(tds[:,ii] - obs[0,ii]).flatten()
 
-    @staticmethod
-    def compute_pseudo_obs(obs, pseudo_obs_dim, tds=None, q=None, n=None):
-      """ Get or compute observed value
-      
-      Parameters:
-      -----------
-      
-      obs : array
-          Observed data
-          
-      pseudo_obs_dim : int
-          Dimension to compute pseudo_obs for
-      
-      tds: array
-          Only needed when obs is computed as percentile of current samples.
-          Will then be used to compute the pseudo_obs_perc percentile of the samples relative
-          to the true observed value. Should eventually converge to the true value.
-          
-      q / n : float / int
-          Define how to compute pseudo_obs, either as percentile or as n-th sample.
-          
-      """
-      
-      if (q is None) and (n is None):
-          if isinstance(obs, np.ndarray):
-              new_obs = obs # Keep old value.
-          elif isinstance(obs, list):
-              new_obs = obs[np.min([len(obs)-1, r-1])] # Get value for round.
-          else:
-              raise NotImplementedError()
 
-      else:
-          assert isinstance(obs, np.ndarray)
-          abs_tds = self.abs_diff_tds_obs_dim(tds=tds, obs=obs, ii=pseudo_obs_dim)
-          
-          if q is not None:
-              new_obs_i = self.percentile(arr=abs_tds, q=q)
-          else:
-              new_obs_i = abs_tds[np.argsort(abs_tds)[n-1]]
-              
-          new_obs = obs.copy()
-          new_obs[0,pseudo_obs_dim] = new_obs_i
-          
-      return new_obs
+    def compute_pseudo_obs(self, obs, pseudo_obs_dim, tds=None, q=None, n=None):
+        """ Get or compute observed value
+        
+        Parameters:
+        -----------
+        
+        obs : array
+            Observed data
+            
+        pseudo_obs_dim : int
+            Dimension to compute pseudo_obs for
+        
+        tds: array
+            Only needed when obs is computed as percentile of current samples.
+            Will then be used to compute the pseudo_obs_perc percentile of the samples relative
+            to the true observed value. Should eventually converge to the true value.
+            
+        q / n : float / int
+            Define how to compute pseudo_obs, either as percentile or as n-th sample.
+            
+        """
+        
+        assert ((q is None) + (n is None)) == 1, 'Set exactly one'
+        
+        assert isinstance(obs, np.ndarray)
+        abs_tds = self.abs_diff_tds_obs_dim(tds=tds, obs=obs, ii=pseudo_obs_dim)
+        
+        if q is not None:
+            new_obs_i = self.percentile(arr=abs_tds, q=q)
+        else:
+            new_obs_i = abs_tds[np.argsort(abs_tds)[n-1]]
+            
+        new_obs = obs.copy()
+        new_obs[0,pseudo_obs_dim] = new_obs_i
+            
+        return new_obs
     
     
-    @staticmethod
-    def compute_kernel_bandwidth(obs, pseudo_obs_dim, bandwidth, bandwidth_min, tds=None, q=None, n=None):
-      """ Update kernel_bandwidth for dimension with adaptive observed.
-      Can not deal with multiple adaptive dimensions.
+    def adapt_kernel_bandwidth(self, pseudo_obs_tds, pseudo_obs=None):
+        ''' Compute and set new kernel bandwidth using training data and distance to obs.
+        '''
       
-      Parameters:
-      -----------
-      
-      obs : array
-          Observed data
-          
-      pseudo_obs_dim : int
-          Dimension to compute pseudo_obs for
-      
-      bandwidth : float or 1d-array
-          Current bandwidth.
-      
-      tds: array
-          Only needed when obs is computed as percentile of current samples.
-          Will then be used to compute the pseudo_obs_perc percentile of the samples relative
-          to the true observed value. Should eventually converge to the true value.
-          
-      q / n : float / int
-          Define how to compute pseudo_obs, either as percentile or as n-th sample.
-          
-      Returns:
-      --------
-      
-      bandwidth
-          
-      """
+        kernel_bandwidth = self.compute_kernel_bandwidth(
+            obs=self.obs, pseudo_obs_dim=self.pseudo_obs_dim,
+            bandwidth=self.kernel.bandwidth, tds=pseudo_obs_tds,
+            bandwidth_min=self.kernel_bandwidth_min,
+            q=self.kernel_bandwidth_perc, n=self.kernel_bandwidth_n,
+        )
+        
+        if self.pseudo_obs_dim is not None:
+            assert (pseudo_obs is not None), 'pseudo_obs_dim need pseudo_obs'
+            self.kernel.set_max_weight_range_ii(pseudo_obs[0,self.pseudo_obs_dim], ii=self.pseudo_obs_dim)
+            self.kernel.set_bandwidth_ii(kernel_bandwidth, ii=self.pseudo_obs_dim)
+        else:
+            if (pseudo_obs is not None): self.kernel.obs = pseudo_obs
+            self.kernel.set_bandwidth(kernel_bandwidth)
+            
+        self.kernel_bandwidth.append(self.kernel.bandwidth) # Save.
     
-      if (q is None) and (n is None):
-          if isinstance(bandwidth, (float, int)):
-              return bandwidth
-          else:
-              return bandwidth[pseudo_obs_dim]
-      else:
-          assert isinstance(obs, np.ndarray)
+    def compute_kernel_bandwidth(self, obs, pseudo_obs_dim, bandwidth, bandwidth_min, tds=None, q=None, n=None):
+        """ Update kernel_bandwidth for dimension with adaptive observed.
+        Can not deal with multiple adaptive dimensions.
+        
+        Parameters:
+        -----------
+        
+        obs : array
+            Observed data
+            
+        pseudo_obs_dim : int
+            Dimension to compute pseudo_obs for
+        
+        bandwidth : float or 1d-array
+            Current bandwidth.
+        
+        tds: array
+            Only needed when obs is computed as percentile of current samples.
+            Will then be used to compute the pseudo_obs_perc percentile of the samples relative
+            to the true observed value. Should eventually converge to the true value.
+            
+        q / n : float / int
+            Define how to compute pseudo_obs, either as percentile or as n-th sample.
+            
+        Returns:
+        --------
+        
+        bandwidth
+            
+        """
       
-      abs_tds = self.abs_diff_tds_obs_dim(tds=tds, obs=obs, ii=pseudo_obs_dim)
-      
-      # Compute new bandwidth.
-      if q is not None:
-          new_bandwidth = self.percentile(arr=abs_tds, q=q) - obs[0,pseudo_obs_dim]
-      else:
-          new_bandwidth = abs_tds[np.argsort(abs_tds)[n-1]] - obs[0,pseudo_obs_dim]
-      
-      if bandwidth_min is not None:
-          if not np.isfinite(new_bandwidth):
-              print('\t Computed bandwidth was NaN, use minimum value {:.2g}.'.format(bandwidth_min))
-              new_bandwidth = bandwidth_min
-          elif new_bandwidth < bandwidth_min:
-              print('\t Computed bandwidth {:.2g} smaller than minimum {:.2g}.'.format(new_bandwidth, bandwidth_min))
-              new_bandwidth = bandwidth_min
-      
-      assert new_bandwidth > 0
-      
-      return new_bandwidth
+        assert ((q is None) + (n is None)) == 1, 'Set exactly one'
+        
+        abs_tds = self.abs_diff_tds_obs_dim(tds=tds, obs=obs, ii=pseudo_obs_dim)
+        
+        # Compute new bandwidth.
+        if q is not None:
+            new_bandwidth = self.percentile(arr=abs_tds, q=q) - obs[0,pseudo_obs_dim]
+        else:
+            new_bandwidth = abs_tds[np.argsort(abs_tds)[n-1]] - obs[0,pseudo_obs_dim]
+        
+        if bandwidth_min is not None:
+            if not np.isfinite(new_bandwidth):
+                print('\t Computed bandwidth was NaN, use minimum value {:.2g}.'.format(bandwidth_min))
+                new_bandwidth = bandwidth_min
+            elif new_bandwidth < bandwidth_min:
+                print('\t Computed bandwidth {:.2g} smaller than minimum {:.2g}.'.format(new_bandwidth, bandwidth_min))
+                new_bandwidth = bandwidth_min
+        
+        assert new_bandwidth > 0
+        
+        return new_bandwidth
     
     
     def run(self, n_train=100, n_rounds=2, epochs=100, minibatch=50,
@@ -389,38 +398,34 @@ class SNPE(BaseInference):
             iws /= np.mean(iws)
             
             # Get training values.
-            pseudo_obs_tds = trn_data[1]
-            if self.pseudo_obs_use_all_data:
-                pseudo_obs_tds = np.concatenate([pseudo_obs_tds] + [tds_i[1] for tds_i in trn_datasets])                
+            use_pseudo_obs = (self.pseudo_obs_perc is not None) or (self.pseudo_obs_n is not None)
+            use_adap_kernel = (self.kernel_bandwidth_perc is not None) or (self.kernel_bandwidth_n is not None)
+            
+            if use_pseudo_obs or use_adap_kernel:
+                pseudo_obs_tds = trn_data[1]
+                if self.pseudo_obs_use_all_data:
+                    pseudo_obs_tds = np.concatenate([pseudo_obs_tds] + [tds_i[1] for tds_i in trn_datasets])                
             
             # Get observed or pseudo-observed value.
-            pseudo_obs = self.compute_pseudo_obs(
-                obs=self.obs, pseudo_obs_dim=self.pseudo_obs_dim, tds=pseudo_obs_tds,
-                q=self.pseudo_obs_perc, n=self.pseudo_obs_n,
-            )
+            if use_pseudo_obs:
+                pseudo_obs = self.compute_pseudo_obs(
+                    obs=self.obs, pseudo_obs_dim=self.pseudo_obs_dim, tds=pseudo_obs_tds,
+                    q=self.pseudo_obs_perc, n=self.pseudo_obs_n,
+                )
+                self.pseudo_obs.append(pseudo_obs) # Save.
+                network_eval_obs = pseudo_obs.copy()
+            else:
+                pseudo_obs = None
+                network_eval_obs = self.obs.copy()
+            
 
             # Update importance weights based on kernel.
             if self.kernel is not None:
-                kernel_bandwidth = self.compute_kernel_bandwidth(
-                    obs=self.obs, pseudo_obs_dim=self.pseudo_obs_dim,
-                    bandwidth=self.kernel.bandwidth, tds=pseudo_obs_tds,
-                    bandwidth_min=self.kernel_bandwidth_min,
-                    q=self.kernel_bandwidth_perc, n=self.kernel_bandwidth_n,
-                )
-                
-                if self.pseudo_obs_dim is not None:
-                    self.kernel.set_max_weight_range_ii(pseudo_obs[0,self.pseudo_obs_dim], ii=self.pseudo_obs_dim)
-                    self.kernel.set_bandwidth_ii(kernel_bandwidth, ii=self.pseudo_obs_dim)
-                else:
-                    self.kernel.obs = pseudo_obs
-                    self.kernel.set_bandwidth(kernel_bandwidth)
+                if use_adap_kernel:
+                    self.adapt_kernel_bandwidth(pseudo_obs_tds=pseudo_obs_tds, pseudo_obs=pseudo_obs)
                 
                 # Compute importance weights with kernel.    
                 iws *= self.kernel.eval(trn_data[1].reshape(n_train_round, -1))
-            
-            # Save values.
-            self.pseudo_obs.append(pseudo_obs)
-            self.kernel_bandwidth.append(self.kernel.bandwidth)
             
             # Add importance weights to data.
             trn_data = (trn_data[0], trn_data[1], iws)
@@ -429,7 +434,7 @@ class SNPE(BaseInference):
                 t0 = time.time()
                 np.set_printoptions(precision=3)
                 print('\tTraining network with observed:')
-                print('\t', pseudo_obs.flatten())
+                print('\t', network_eval_obs.flatten())
                 print('\tand kernel bandwidth:')
                 print('\t', self.kernel.bandwidth)
             
@@ -457,7 +462,7 @@ class SNPE(BaseInference):
             trn_datasets.append(trn_data)
             
             try:
-                posteriors.append(self.predict(pseudo_obs))
+                posteriors.append(self.predict(network_eval_obs))
             except np.linalg.LinAlgError:
                 posteriors.append(None)
                 print("Cannot predict posterior after round {} due to NaNs".format(r))
