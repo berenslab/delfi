@@ -62,10 +62,10 @@ class StrechedGauss(BaseNoneKernel):
         '''
         if np.isnan(u):
             return self.nan_weight
-        elif np.abs(u) <= self.max_weight_range:
+        elif np.abs(u) <= self.max_weight_range*self.invH:
             return 1/np.sqrt(2*np.pi)
         else:
-            return 1/np.sqrt(2*np.pi)*np.exp(-0.5*u**2)
+            return 1/np.sqrt(2*np.pi)*np.exp(-0.5*(np.abs(u)-self.max_weight_range*self.invH)**2)
 
 
 class VectorStrechedGauss(BaseNoneKernel):
