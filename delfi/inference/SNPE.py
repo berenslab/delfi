@@ -7,7 +7,7 @@ from delfi.neuralnet.Trainer import Trainer
 from delfi.neuralnet.loss.regularizer import svi_kl_init, svi_kl_zero
 
 class SNPE(BaseInference):
-    def __init__(self, generator, obs=None, pseudo_obs_dim=0, pseudo_obs_perc=None, pseudo_obs_n=None,
+    def __init__(self, generator, obs=None, pseudo_obs_dim=None, pseudo_obs_perc=None, pseudo_obs_n=None,
                  kernel_bandwidth_perc=None, kernel_bandwidth_n=None, kernel_bandwidth_min=None,
                  pseudo_obs_use_all_data=False, prior_norm=False, pilot_samples=100,
                  convert_to_T=3, reg_lambda=0.01, prior_mixin=0, kernel=None, seed=None, verbose=True,
@@ -24,9 +24,8 @@ class SNPE(BaseInference):
             If list, obs will be changed every round. In this case it should be converging to the true value.
             The different observed value can be used as guidance for the algorithm.
             Alternatively, set pseudo_obs_perc.
-        pseudo_obs_dim : int
-            Dimension to apply pseudo-obs to.
-            TODO: Extend to multiple dimensions.
+        pseudo_obs_dim : int or None
+            Dimension with adaptive pseudo-obs.
         pseudo_obs_perc : double in [0,100]
             If set, adaptively change obs relative to percentile of best samples.
             Set to zero to use best sample only.
@@ -113,6 +112,11 @@ class SNPE(BaseInference):
         self.prior_mixin = 0 if prior_mixin is None else prior_mixin
 
         self.kernel = kernel
+        
+        if self.kernel.vector_kernel:
+            assert pseudo_obs_dim is not None, 'Define a dimension where kernel will be streched'
+        else:
+            assert pseudo_obs_dim is None, 'Not implemented for this kernel.'
 
     def loss(self, N, round_cl=1):
         """Loss function for training
@@ -383,7 +387,7 @@ class SNPE(BaseInference):
                 pseudo_obs_tds = np.concatenate([pseudo_obs_tds] + [tds_i[1] for tds_i in trn_datasets])                
             
             # Get observed or pseudo-observed value.
-            obs = self.compute_pseudo_obs(
+            pseudo_obs = self.compute_pseudo_obs(
                 obs=self.obs, pseudo_obs_dim=self.pseudo_obs_dim, tds=pseudo_obs_tds,
                 q=self.pseudo_obs_perc, n=self.pseudo_obs_n,
             )
@@ -397,18 +401,18 @@ class SNPE(BaseInference):
                     q=self.kernel_bandwidth_perc, n=self.kernel_bandwidth_n,
                 )
                 
-                if self.kernel.vector_kernel:
-                    self.kernel.set_max_weight_range_ii(obs[0,self.pseudo_obs_dim], ii=self.pseudo_obs_dim)
+                if self.pseudo_obs_dim is not None:
+                    self.kernel.set_max_weight_range_ii(pseudo_obs[0,self.pseudo_obs_dim], ii=self.pseudo_obs_dim)
                     self.kernel.set_bandwidth_ii(kernel_bandwidth, ii=self.pseudo_obs_dim)
                 else:
-                    self.kernel.obs = obs
+                    self.kernel.obs = pseudo_obs
                     self.kernel.set_bandwidth(kernel_bandwidth)
                 
                 # Compute importance weights with kernel.    
                 iws *= self.kernel.eval(trn_data[1].reshape(n_train_round, -1))
             
             # Save values.
-            self.pseudo_obs.append(obs)
+            self.pseudo_obs.append(pseudo_obs)
             self.kernel_bandwidth.append(self.kernel.bandwidth)
             
             # Add importance weights to data.
@@ -418,7 +422,7 @@ class SNPE(BaseInference):
                 t0 = time.time()
                 np.set_printoptions(precision=3)
                 print('\tTraining network with observed:')
-                print('\t', obs.flatten())
+                print('\t', pseudo_obs.flatten())
                 print('\tand kernel bandwidth:')
                 print('\t', self.kernel.bandwidth)
             
@@ -446,7 +450,7 @@ class SNPE(BaseInference):
             trn_datasets.append(trn_data)
             
             try:
-                posteriors.append(self.predict(obs))
+                posteriors.append(self.predict(pseudo_obs))
             except np.linalg.LinAlgError:
                 posteriors.append(None)
                 print("Cannot predict posterior after round {} due to NaNs".format(r))

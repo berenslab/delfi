@@ -39,36 +39,6 @@ class HalfGauss(BaseNoneKernel):
 
 
 class StrechedGauss(BaseNoneKernel):
-    def __init__(self, obs, bandwidth=1., atleast=None, nan_weight=0.0, max_weight_range=0.0):
-        ''' See also BaseNoneKernel.
-        
-        Additional Parameters:
-            nan_weight : float in [0, 1]
-                Weight for NaNs values in kernel evaluation.
-        
-            max_weight_range : float >= 0
-                Distance to obs, that will result in maximum weight.
-                Outside, behaves like a Gaussian.
-        '''
-        self.nan_weight = nan_weight
-        self.max_weight_range = max_weight_range
-        super().__init__(obs, bandwidth=bandwidth, spherical=False, atleast=atleast)
-
-
-    def kernel(self, u):
-        ''' Evaluate kernel at specified value.
-        Parameters:
-            u : float
-        '''
-        if np.isnan(u):
-            return self.nan_weight
-        elif np.abs(u) <= self.max_weight_range*self.invH:
-            return 1/np.sqrt(2*np.pi)
-        else:
-            return 1/np.sqrt(2*np.pi)*np.exp(-0.5*(np.abs(u)-self.max_weight_range*self.invH)**2)
-
-
-class VectorStrechedGauss(BaseNoneKernel):
 
     def __init__(self, obs, bandwidth, atleast=None, nan_weight=0.0, max_weight_range=0.0):
         ''' Vector kernel.
