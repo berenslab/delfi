@@ -154,6 +154,14 @@ class SNPE(BaseInference):
         return loss
 
     @staticmethod
+    def percentile(arr, q):
+        return arr[np.argsort(arr)[int(np.round(q/100*arr.size))]]
+        
+    @staticmethod
+    def abs_diff_tds_obs_dim(tds, obs, ii):
+        return np.abs(tds[:,ii] - obs[0,ii]).flatten()
+
+    @staticmethod
     def compute_pseudo_obs(obs, pseudo_obs_dim, tds=None, q=None, n=None):
       """ Get or compute observed value
       
@@ -178,18 +186,18 @@ class SNPE(BaseInference):
       
       if (q is None) and (n is None):
           if isinstance(obs, np.ndarray):
-              new_obs = obs
+              new_obs = obs # Keep old value.
           elif isinstance(obs, list):
-              new_obs = obs[np.min([len(obs)-1, r-1])]
+              new_obs = obs[np.min([len(obs)-1, r-1])] # Get value for round.
           else:
               raise NotImplementedError()
 
       else:
           assert isinstance(obs, np.ndarray)
-          abs_tds = np.abs(tds[:,pseudo_obs_dim] - obs[0,pseudo_obs_dim]).flatten()
+          abs_tds = self.abs_diff_tds_obs_dim(tds=tds, obs=obs, ii=pseudo_obs_dim)
           
           if q is not None:
-              new_obs_i = abs_tds[np.argsort(abs_tds)[int(np.round(q/100*abs_tds.size))]]
+              new_obs_i = self.percentile(arr=abs_tds, q=q)
           else:
               new_obs_i = abs_tds[np.argsort(abs_tds)[n-1]]
               
@@ -239,14 +247,13 @@ class SNPE(BaseInference):
       else:
           assert isinstance(obs, np.ndarray)
       
-      abs_tds = np.abs(tds[:,pseudo_obs_dim] - obs[0,pseudo_obs_dim]).flatten()
+      abs_tds = self.abs_diff_tds_obs_dim(tds=tds, obs=obs, ii=pseudo_obs_dim)
       
       # Compute new bandwidth.
       if q is not None:
-          new_bandwidth = abs_tds[np.argsort(abs_tds)[int(np.round(q/100*abs_tds.size))]]
+          new_bandwidth = self.percentile(arr=abs_tds, q=q) - obs[0,pseudo_obs_dim]
       else:
-          new_bandwidth = abs_tds[np.argsort(abs_tds)[n-1]]
-      new_bandwidth -= obs[0,pseudo_obs_dim]
+          new_bandwidth = abs_tds[np.argsort(abs_tds)[n-1]] - obs[0,pseudo_obs_dim]
       
       if bandwidth_min is not None:
           if not np.isfinite(new_bandwidth):

@@ -64,7 +64,6 @@ class StrechedGauss(BaseNoneKernel):
     
         super().__init__(obs, bandwidth=bandwidth, spherical=False, atleast=atleast)
 
-
         self.vector_kernel = True
     
     def eval(self, x):
