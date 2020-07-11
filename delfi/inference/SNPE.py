@@ -187,7 +187,7 @@ class SNPE(BaseInference):
         abs_tds = self.abs_diff_tds_obs_dim(tds=tds, obs=obs, ii=pseudo_obs_dim)
         
         if q is not None:
-            new_obs_i = np.percentile(abs_tds, q=q)
+            new_obs_i = np.nanpercentile(abs_tds, q=q)
         else:
             new_obs_i = abs_tds[np.argsort(abs_tds)[n-1]]
             
@@ -255,7 +255,7 @@ class SNPE(BaseInference):
         
         # Compute new bandwidth.
         if q is not None:
-            new_bandwidth = np.percentile(abs_tds, q=q) - obs[0,pseudo_obs_dim]
+            new_bandwidth = np.nanpercentile(abs_tds, q=q) - obs[0,pseudo_obs_dim]
         else:
             new_bandwidth = abs_tds[np.argsort(abs_tds)[n-1]] - obs[0,pseudo_obs_dim]
         
