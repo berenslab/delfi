@@ -216,7 +216,7 @@ class SNPE(BaseInference):
             if (pseudo_obs is not None): self.kernel.obs = pseudo_obs
             self.kernel.set_bandwidth(kernel_bandwidth)
             
-        self.kernel_bandwidth.append(self.kernel.bandwidth) # Save.
+        self.kernel_bandwidth.append(self.kernel.bandwidth.copy()) # Save.
     
     def compute_kernel_bandwidth(self, obs, pseudo_obs_dim, bandwidth, bandwidth_min, tds=None, q=None, n=None):
         """ Update kernel_bandwidth for dimension with adaptive observed.
@@ -407,7 +407,7 @@ class SNPE(BaseInference):
                     obs=self.obs, pseudo_obs_dim=self.pseudo_obs_dim, tds=pseudo_obs_tds,
                     q=self.pseudo_obs_perc, n=self.pseudo_obs_n,
                 )
-                self.pseudo_obs.append(pseudo_obs) # Save.
+                self.pseudo_obs.append(pseudo_obs.copy()) # Save.
                 network_eval_obs = pseudo_obs.copy()
             else:
                 pseudo_obs = None
